@@ -42,13 +42,13 @@ char *readCommand(void) {
 
     while(fgets(buffer, 1024, stdin)) {
         
-        int bufferLen = strlen(buf);
+        int bufferLen = strlen(buffer);
 
         if(!pointer) {
             pointer = malloc(bufferLen + 1);
         }
         else {
-            char *pointer2 = realloc(pointer, pointerLen + bufferLen + 1)
+            char *pointer2 = realloc(pointer, pointerLen + bufferLen + 1);
 
             if(pointer2) {
                 pointer = pointer2;

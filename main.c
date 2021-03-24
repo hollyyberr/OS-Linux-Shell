@@ -2,14 +2,16 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 #include "shell.h"
 
 int main(int argc, char **argv)
 {
-
+    bool end = false;
+    
     char *command;
-    do
-    {
+
+    while(!end) {
         // Prints initial prompt to users shell
         printPrompt1();
         // Reads command that user has entered
@@ -29,16 +31,16 @@ int main(int argc, char **argv)
         if (strcmp(command, "exit\n") == 0)
         { // If the user has entered 'exit' shell breaks
             free(command);
-            break;
+            exit(EXIT_SUCCESS);
+            //break;
         }
 
         printf("%s\n", command);
         free(command);
-
     }
 
-    while (1);
-    exit(EXIT_SUCCESS);
+    //while (1);
+    //exit(EXIT_SUCCESS);
 }
 
 char *readCommand(void)

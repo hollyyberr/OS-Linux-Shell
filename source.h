@@ -8,7 +8,7 @@ struct sourceS
 {
     char *buffer;        // Stores user inputted string
     long bufferSize;     // Length of user inputted string
-    long curserPosition; // Position of user's cursor
+    long cursorPosition; // Position of user's cursor
 };
 
 char nextChar(struct sourceS *src);

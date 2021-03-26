@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "shell.h"
+#include "source.h"
+#include "parser.h"
+#include "executor.h"
 
 int main(int argc, char **argv)
 {
@@ -35,7 +38,11 @@ int main(int argc, char **argv)
             //break;
         }
 
-        printf("%s\n", command);
+        struct sourceS src;
+        src.buffer = command;
+        src.bufferSize = strlen(command);
+        src.cursorPosition - INIT_SRC_POS;
+        parseAndExecute(&src);
         free(command);
     }
 
@@ -100,4 +107,30 @@ char *readCommand(void)
     }
 
     return pointer;
+}
+
+
+int parseAndExecute(struct sourceS *src) {
+
+    skipWhiteSpaces(src);
+
+    struct tokenS *token = tokenize(src);
+
+    if(token == &eofToken) {
+        return 0;
+    }
+
+    while(token && token != &eofToken) {
+        struct nodeS *command = parseSimpleCommand(token);
+
+        if(!command) {
+            break;
+        }
+
+        doSimpleCommand(command);
+        freeNodeTree(command);
+        token = tokenize(src);
+    }
+
+    return 1;
 }

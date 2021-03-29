@@ -17,7 +17,7 @@ char *searchPath(char *file) {
     while(p1 && *p1) {
         p2 = p1;
 
-        while(*p2 & & *p2 != ':') {
+        while(*p2 && *p2 != ':') {
             p2++;
         }
 
@@ -40,7 +40,7 @@ char *searchPath(char *file) {
 
         struct stat st;
         if(stat(path, &st) == 0) {
-            if(!IS_ISREG(st.st_mode)) {
+            if(!S_ISREG(st.st_mode)) {
                 errno = ENOENT;
                 p1 = p2;
                 if(*p2 == ':') {

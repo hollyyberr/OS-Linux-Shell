@@ -7,7 +7,7 @@ enum nodeTypeE {
 };
 
 enum valTypeE {
-    VAL_SIT = 1,
+    VAL_SINT = 1,
     VAL_UINT, 
     VAL_SLLONG,
     VAL_ULLONG,

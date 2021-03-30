@@ -1,14 +1,16 @@
 #ifndef NODE_H
 #define NODE_H
 
-enum nodeTypeE {
+enum nodeTypeE
+{
     NODE_COMMAND,
     NODE_VAR,
 };
 
-enum valTypeE {
+enum valTypeE
+{
     VAL_SINT = 1,
-    VAL_UINT, 
+    VAL_UINT,
     VAL_SLLONG,
     VAL_ULLONG,
     VAL_FLOAT,
@@ -17,7 +19,8 @@ enum valTypeE {
     VAL_STR,
 };
 
-union symvalU {
+union symvalU
+{
     long sint;
     unsigned long uint;
     long long sllong;
@@ -28,9 +31,10 @@ union symvalU {
     char *str;
 };
 
-struct nodeS {
+struct nodeS
+{
     enum nodeTypeE type;
-    enum valTypeE valType;
+    enum valTypeE val_type;
     union symvalU val;
     int children;
     struct nodeS *firstChild;

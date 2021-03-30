@@ -9,7 +9,7 @@ void ungetChar(struct sourceS *src)
         return;
     }
 
-    src->cursorPosition--;
+    src->curPosition--;
 }
 
 char nextChar(struct sourceS *src)
@@ -47,32 +47,32 @@ char peekChar(struct sourceS *src)
         return ERRCHAR;
     }
 
-    long thisPos = src->cursorPosition;
+    long position = src->cursorPosition;
 
-    if (thisPos == INIT_SRC_POS)
+    if (position == INIT_SRC_POS)
     {
-        thisPos++;
+        position++;
     }
-    thisPos++;
+    position++;
 
-    if (thisPos >= src->bufferSize)
+    if (position >= src->bufferSize)
     {
         return EOF;
     }
 
-    return src->buffer[thisPos];
+    return src->buffer[position];
 }
 
 void skipWhiteSpaces(struct sourceS *src)
 {
-    char thisChar;
+    char ch;
 
     if (!src || !src->buffer)
     {
         return;
     }
 
-    while (((thisChar = peekChar(src)) != EOF) && (thisChar == ' ' || thisChar == '\t'))
+    while (((ch = peekChar(src)) != EOF) && (ch == ' ' || ch == '\t'))
     {
         nextChar(src);
     }

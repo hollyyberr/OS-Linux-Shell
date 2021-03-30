@@ -6,10 +6,12 @@
 #include "node.h"
 #include "parser.h"
 
-struct nodeS *newNode(enum nodeTypeE type) {
+struct nodeS *newNode(enum nodeTypeE type)
+{
     struct nodeS *node = malloc(sizeof(struct nodeS));
 
-    if(!node){
+    if (!node)
+    {
         return NULL;
     }
 
@@ -19,19 +21,23 @@ struct nodeS *newNode(enum nodeTypeE type) {
     return node;
 }
 
-void addChildNode(struct nodeS *parent, struct nodeS *child) {
-    
-    if(!parent || !child) {
+void addChildNode(struct nodeS *parent, struct nodeS *child)
+{
+    if (!parent || !child)
+    {
         return;
     }
 
-    if(!parent->firstChild) {
+    if (!parent->firstChild)
+    {
         parent->firstChild = child;
     }
-    else {
-        struct nodeS *sibling = parent->firstChild;
+    else
+    {
+        struct nodeS *sibling = parent->first_child;
 
-        while(sibling->nextSibling) {
+        while (sibling->nextSibling)
+        {
             sibling = sibling->nextSibling;
         }
 
@@ -41,41 +47,50 @@ void addChildNode(struct nodeS *parent, struct nodeS *child) {
     parent->children++;
 }
 
-void setNodeValStr(struct nodeS *node, char *val) {
+void setNodeValStr(struct nodeS *node, char *val)
+{
     node->valType = VAL_STR;
 
-    if(!val) {
+    if (!val)
+    {
         node->val.str = NULL;
     }
-    else {
-        char *val2 = malloc(strlen(val)+1);
+    else
+    {
+        char *val2 = malloc(strlen(val) + 1);
 
-        if(!val2) {
+        if (!val2)
+        {
             node->val.str = NULL;
         }
-        else {
+        else
+        {
             strcpy(val2, val);
             node->val.str = val2;
         }
     }
 }
 
-void freeNodeTree(struct nodeS *node) {
-    
-    if(!node) {
+void freeNodeTree(struct nodeS *node)
+{
+    if (!node)
+    {
         return;
     }
 
     struct nodeS *child = node->firstChild;
 
-    while(child) {
+    while (child)
+    {
         struct nodeS *next = child->nextSibling;
         freeNodeTree(child);
         child = next;
     }
 
-    if(node->valType == VAL_STR) {
-        if(node->val.str) {
+    if (node->valType == VAL_STR)
+    {
+        if (node->val.str)
+        {
             free(node->val.str);
         }
     }

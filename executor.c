@@ -80,7 +80,7 @@ char *searchPath(char *file)
     return NULL;
 }
 
-int doExecCmd(int argc, char **argv)
+int doExecCommand(int argc, char **argv)
 {
     if (strchr(argv[0], '/'))
     {

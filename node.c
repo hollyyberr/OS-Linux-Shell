@@ -34,7 +34,7 @@ void addChildNode(struct nodeS *parent, struct nodeS *child)
     }
     else
     {
-        struct nodeS *sibling = parent->first_child;
+        struct nodeS *sibling = parent->firstChild;
 
         while (sibling->nextSibling)
         {

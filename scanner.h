@@ -4,14 +4,14 @@
 struct tokenS
 {
 
-    struct sourceS *src; // Where input is coming from
-    int textLength;      // Length of user input
-    char *text;          // Content of user input
+    struct sourceS *src;
+    int textLength;
+    char *text;
 };
 
-extern struct tokenS eofToken; // End of user input token
+extern struct tokenS eofToken;
 
-struct tokenS *tokenize(struct sourceS *src); // Gets next piece of user input
+struct tokenS *tokenize(struct sourceS *src);
 
 void freeToken(struct tokenS *token);
 

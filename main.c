@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     {
         printPrompt1();
 
-        command = readCommmand();
+        command = readCommand();
 
         if (!command)
         {
@@ -85,14 +85,14 @@ char *readCommand(void)
 
         strcpy(pointer + pointerLength, buffer);
 
-        if (buf[bufferLen - 1] == '\n')
+        if (buffer[bufferLen - 1] == '\n')
         {
             if (bufferLen == 1 || buffer[bufferLen - 2] != '\\')
             {
                 return pointer;
             }
 
-            ptr[pointerLength + bufferLen - 2] = '\0';
+            pointer[pointerLength + bufferLen - 2] = '\0';
             bufferLen -= 2;
             printPrompt2();
         }

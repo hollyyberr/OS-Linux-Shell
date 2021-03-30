@@ -44,7 +44,7 @@ struct tokenS *createToken(char *str)
         return NULL;
     }
 
-    memset(token, 0, sizeof(struct token_s));
+    memset(token, 0, sizeof(struct tokenS));
     token->textLength = strlen(str);
 
     char *str2 = malloc(token->textLength + 1);
@@ -56,7 +56,7 @@ struct tokenS *createToken(char *str)
     }
 
     strcpy(str2, str);
-    tok->text = str2;
+    token->text = str2;
 
     return token;
 }

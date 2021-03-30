@@ -9,7 +9,7 @@ void ungetChar(struct sourceS *src)
         return;
     }
 
-    src->curPosition--;
+    src->cursorPosition--;
 }
 
 char nextChar(struct sourceS *src)

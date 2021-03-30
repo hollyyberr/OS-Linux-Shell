@@ -34,7 +34,7 @@ union symvalU
 struct nodeS
 {
     enum nodeTypeE type;
-    enum valTypeE val_type;
+    enum valTypeE valType;
     union symvalU val;
     int children;
     struct nodeS *firstChild;

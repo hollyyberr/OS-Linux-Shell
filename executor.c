@@ -149,7 +149,16 @@ int doSimpleCommand(struct nodeS *node)
         child = child->nextSibling;
     }
     argv[argc] = NULL;
+    int i = 0;
+    for( ; i < builtinsCount; i++) {
 
+        if(strcmp(argv[0], builtins[i].name) == 0) {
+
+            builtins[i].func(argc, argv);
+            freeArgv(argc, argv);
+            return 1;
+        }
+    }
     pid_t childPid = 0;
     if ((childPid = fork()) == 0)
     {

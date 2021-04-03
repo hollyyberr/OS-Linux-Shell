@@ -19,7 +19,7 @@ void initSymtab(void)
 
     if (!globalSymtab)
     {
-        fprintf(stderr, "fatal error: Could not create global symbol table due to lack of memory\n");
+        fprintf(stderr, "Fatal Error: Could not create global symbol table due to lack of memory\n");
         exit(EXIT_FAILURE);
     }
 
@@ -37,7 +37,7 @@ struct symtabS *newSymtab(int level)
 
     if (!symtab)
     {
-        fprintf(stderr, "fatal error: Could not create new symbol table due to lack of memory\n");
+        fprintf(stderr, "Fatal Error: Could not create new symbol table due to lack of memory\n");
         exit(EXIT_FAILURE);
     }
 
@@ -116,7 +116,7 @@ struct symtabEntryS *addToSymtab(char *symb)
     struct symtabS *ns = symtabStack.localSymtab;
     struct symtabEntryS *ent = NULL;
 
-    if ((ent = do_lookup(symb, ns)))
+    if ((ent = doLookup(symb, ns)))
     {
         return ent;
     }
@@ -125,7 +125,7 @@ struct symtabEntryS *addToSymtab(char *symb)
 
     if (!ent)
     {
-        fprintf(stderr, "fatal error: no memory for new symbol table entry\n");
+        fprintf(stderr, "Fatal Error: Not enough memory for new symbol table entry\n");
         exit(EXIT_FAILURE);
     }
 
@@ -134,7 +134,7 @@ struct symtabEntryS *addToSymtab(char *symb)
 
     if (!ent->name)
     {
-        fprintf(stderr, "fatal error: no memory for new symbol table entry\n");
+        fprintf(stderr, "Fatal Error: Not enough memory for new symbol table entry\n");
         exit(EXIT_FAILURE);
     }
 
@@ -242,4 +242,97 @@ struct symtabEntryS *getSymtabEntry(char *str)
     } while (--temp >= 0);
 
     return NULL;
+}
+
+void symtabEntrySetval(struct symtabEntryS *ent, char *temp)
+// Clears memory used to store old entry values
+{
+    if(ent->val)
+    {
+        free(ent->val);
+    }
+
+    if(!temp)
+    {
+        ent->val = NULL;
+    }
+    else
+    {
+        char *temp2 = malloc(strlen(temp)+1);
+
+        if(temp2)
+        {
+            strcpy(temp2, temp);
+        }
+        else
+        {
+            fprintf(stderr, "Error: Not enough memory for symbol table entry's value\n");
+        }
+
+        ent->val = temp2;
+    }
+}
+
+void symtabStackAdd(struct symtabS *st)
+// Adds parameter symbol table to stack, assigns new table as local symbol table
+{
+    symtabStack.symtabList[symtabStack.symtabCount++] = st;
+    symtabStack.localSymtab = st;
+}
+
+
+struct symtabS *symtabStackPush(void)
+// Creates new empty symbol table and adds it to top of stack
+{
+    struct symtabS *ns = newSymtab(++symtabLevel);
+    symtabStackAdd(ns);
+    return ns;
+}
+
+
+struct symtabS *symtabStackPop(void)
+// Removes symbol table on top of stack, adjusts pointers
+{
+    if(symtabStack.symtabCount == 0)
+    {
+        return NULL;
+    }
+
+    struct symtabS *ns = symtabStack.symtabList[symtabStack.symtabCount-1];
+
+    symtabStack.symtabList[--symtabStack.symtabCount] = NULL;
+    symtabLevel--;
+
+    if(symtabStack.symtabCount == 0)
+    {
+        symtabStack.localSymtab  = NULL;
+        symtabStack.globalSymtab = NULL;
+    }
+    else
+    {
+        symtabStack.localSymtab = symtabStack.symtabList[symtabStack.symtabCount-1];
+    }
+
+    return ns;
+}
+
+
+struct symtabS *getLocalSymtab(void)
+// Returns pointer to symbol table
+{
+    return symtabStack.localSymtab;
+}
+
+
+struct symtabS *getGlobalSymtab(void)
+// Returns pointer to symbol table
+{
+    return symtabStack.globalSymtab;
+}
+
+
+struct symtabStackS *getSymtabStack(void)
+// Returns pointer to symbol table stack
+{
+    return &symtabStack;
 }

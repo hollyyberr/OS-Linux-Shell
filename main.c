@@ -12,6 +12,7 @@ int main(int argc, char **argv)
 {
     char *command;
 
+    initsh();
     do
     {
         printPrompt1();

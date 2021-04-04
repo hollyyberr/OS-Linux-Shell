@@ -126,33 +126,51 @@ int doSimpleCommand(struct nodeS *node)
     }
 
     int argc = 0;
-    long maxArgs = 255;
-    char *argv[maxArgs + 1]; /* keep 1 for the terminating NULL arg */
+    int tArgc = 0;
+    char **argv = NULL;
     char *str;
 
     while (child)
     {
         str = child->val.str;
-        argv[argc] = malloc(strlen(str) + 1);
+        struct wordS *w = wordExpand(str);
 
-        if (!argv[argc])
+        if (!w)
         {
-            freeArgv(argc, argv);
-            return 0;
+            child = child->nextSibling;
+            continue;
         }
 
-        strcpy(argv[argc], str);
-        if (++argc >= maxArgs)
+        struct wordS *w2 = w;
+        while (w2)
         {
-            break;
+            if (checkBufferBounds(&argc, &tArgc, &argv))
+            {
+                str = malloc(strlen(w2->data) + 1);
+                if (str)
+                {
+                    strcpy(str, w2->data);
+                    argv[argc++] = str;
+                }
+            }
+            w2 = w2->next;
         }
+
+        freeAllWords(w);
+
         child = child->nextSibling;
     }
-    argv[argc] = NULL;
-    int i = 0;
-    for( ; i < builtinsCount; i++) {
 
-        if(strcmp(argv[0], builtins[i].name) == 0) {
+    if (checkBufferBounds(&argc, &tArgc, &argv))
+    {
+        argv[argc] = NULL;
+    }
+    int i = 0;
+    for (; i < builtinsCount; i++)
+    {
+
+        if (strcmp(argv[0], builtins[i].name) == 0)
+        {
 
             builtins[i].func(argc, argv);
             freeArgv(argc, argv);
@@ -180,12 +198,14 @@ int doSimpleCommand(struct nodeS *node)
     else if (childPid < 0)
     {
         fprintf(stderr, "error: Could not fork command: %s\n", strerror(errno));
+        free_buffer(argc, argv);
         return 0;
     }
 
     int sts = 0;
     waitpid(childPid, &sts, 0);
-    freeArgv(argc, argv);
+    free_buffer(argc, argv);
+    // freeArgv(argc, argv);
 
     return 1;
 }

@@ -95,6 +95,8 @@ struct tokenS *tokenize(struct sourceS *src)
     tokenBuffer[0] = '\0';
 
     char newch = nextChar(src);
+    char newch2;
+    int i;
 
     if (newch == ERRCHAR || newch == EOF)
     {
@@ -105,6 +107,63 @@ struct tokenS *tokenize(struct sourceS *src)
     {
         switch (newch)
         {
+        case '"':
+        case '\'':
+        case '`':
+            addToBuf(newch);
+            i = findClosingQuote(src->buffer + src->cursorPosition);
+            if (!i)
+            {
+                src->cursorPosition = src->bufferSize;
+                fprintf(stderr, "error: missing closing quote '%c'\n", newch);
+                return &eofToken;
+            }
+            while (i--)
+            {
+                addToBuf(nextChar(src));
+            }
+            break;
+
+        case '\\':
+            newch2 = nextChar(src);
+            if (newch2 == '\n')
+            {
+                break;
+            }
+
+            addToBuf(newch);
+
+            if (newch2 > 0)
+            {
+                addToBuf(newch2);
+            }
+            break;
+
+        case '$':
+            addToBuf(newch);
+            newch = peekChar(src);
+
+            if (newch == '{' || newch == '(')
+            {
+                i = findClosingBrace(src->buffer + src->cursorPosition + 1);
+                if (!i)
+                {
+                    src->cursorPosition = src->bufferSize;
+                    fprintf(stderr, "error: missing closing brace '%c'\n", newch);
+                    return &eofToken;
+                }
+
+                while (i--)
+                {
+                    addToBuf(nextChar(src));
+                }
+            }
+            else if (isalnum(newch) || newch == '*' || newch == '@' || newch == '#' ||
+                     newch == '!' || newch == '?' || newch == '$')
+            {
+                addToBuf(nextChar(src));
+            }
+            break;
         case ' ':
         case '\t':
             if (tokenBufferIndex > 0)

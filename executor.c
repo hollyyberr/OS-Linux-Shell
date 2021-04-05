@@ -198,13 +198,13 @@ int doSimpleCommand(struct nodeS *node)
     else if (childPid < 0)
     {
         fprintf(stderr, "error: Could not fork command: %s\n", strerror(errno));
-        free_buffer(argc, argv);
+        freeBuffer(argc, argv);
         return 0;
     }
 
     int sts = 0;
     waitpid(childPid, &sts, 0);
-    free_buffer(argc, argv);
+    freeBuffer(argc, argv);
     // freeArgv(argc, argv);
 
     return 1;

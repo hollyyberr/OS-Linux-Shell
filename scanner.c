@@ -110,7 +110,7 @@ struct tokenS *tokenize(struct sourceS *src)
         case '"':
         case '\'':
         case '`':
-            addToBuf(newch);
+            addToBuffer(newch);
             i = findClosingQuote(src->buffer + src->cursorPosition);
             if (!i)
             {
@@ -120,7 +120,7 @@ struct tokenS *tokenize(struct sourceS *src)
             }
             while (i--)
             {
-                addToBuf(nextChar(src));
+                addToBuffer(nextChar(src));
             }
             break;
 
@@ -131,16 +131,16 @@ struct tokenS *tokenize(struct sourceS *src)
                 break;
             }
 
-            addToBuf(newch);
+            addToBuffer(newch);
 
             if (newch2 > 0)
             {
-                addToBuf(newch2);
+                addToBuffer(newch2);
             }
             break;
 
         case '$':
-            addToBuf(newch);
+            addToBuffer(newch);
             newch = peekChar(src);
 
             if (newch == '{' || newch == '(')
@@ -155,13 +155,13 @@ struct tokenS *tokenize(struct sourceS *src)
 
                 while (i--)
                 {
-                    addToBuf(nextChar(src));
+                    addToBuffer(nextChar(src));
                 }
             }
             else if (isalnum(newch) || newch == '*' || newch == '@' || newch == '#' ||
-                     newch == '!' || newch == '?' || newch == '$')
+                                       newch == '!' || newch == '?' || newch == '$')
             {
-                addToBuf(nextChar(src));
+                addToBuffer(nextChar(src));
             }
             break;
         case ' ':

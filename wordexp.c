@@ -25,7 +25,7 @@ struct wordS *makeWord(char *str)
     }
 
     /* alloc string memory */
-    sizeT length = strlen(str);
+    size_t length = strlen(str);
     char *data = malloc(length + 1);
 
     if (!data)
@@ -37,7 +37,7 @@ struct wordS *makeWord(char *str)
     /* copy string */
     strcpy(data, str);
     word->data = data;
-    word->len = length;
+    word->length = length;
     word->next = NULL;
 
     /* return struct */
@@ -71,7 +71,7 @@ char *wordlistToTtr(struct wordS *word)
     {
         return NULL;
     }
-    sizeT length = 0;
+    size_t length = 0;
     struct wordS *temp = word;
     while (temp)
     {
@@ -95,7 +95,7 @@ char *wordlistToTtr(struct wordS *word)
     return str;
 }
 
-void deleteCharAt(char *str, sizeT ind)
+void deleteCharAt(char *str, size_t ind)
 {
     char *temp1 = str + ind;
     char *temp2 = temp1 + 1;
@@ -123,7 +123,7 @@ int isName(char *str)
     return 1;
 }
 
-sizeT findClosingQuote(char *dat)
+size_t findClosingQuote(char *dat)
 {
     char q = dat[0];
     if (q != '\'' && q != '"' && q != '`')
@@ -131,7 +131,7 @@ sizeT findClosingQuote(char *dat)
         return 0;
     }
 
-    sizeT i = 0, length = strlen(dat);
+    size_t i = 0, length = strlen(dat);
     while (++i < length)
     {
         if (dat[i] == q)
@@ -149,7 +149,7 @@ sizeT findClosingQuote(char *dat)
     return 0;
 }
 
-sizeT findClosingBrace(char *dat)
+size_t findClosingBrace(char *dat)
 {
     char openingBrace = dat[0], closingBrace;
     if (openingBrace != '{' && openingBrace != '(')
@@ -164,8 +164,8 @@ sizeT findClosingBrace(char *dat)
     {
         closingBrace = ')';
     }
-    sizeT obCount = 1, cbCount = 0;
-    sizeT i = 0, length = strlen(dat);
+    size_t obCount = 1, cbCount = 0;
+    size_t i = 0, length = strlen(dat);
     while (++i < length)
     {
         if ((dat[i] == '"') || (dat[i] == '\'') || (dat[i] == '`'))
@@ -211,18 +211,18 @@ sizeT findClosingBrace(char *dat)
     return i;
 }
 
-char *substituteStr(char *temp1, char *temp2, sizeT start, sizeT end)
+char *substituteStr(char *temp1, char *temp2, size_t start, size_t end)
 {
 
     char bef[start + 1];
     strncpy(bef, temp1, start);
     bef[start] = '\0';
 
-    sizeT afterlength = strlen(temp1) - end + 1;
+    size_t afterlength = strlen(temp1) - end + 1;
     char after[afterlength];
     strcpy(after, temp1 + end + 1);
 
-    sizeT totalLen = start + afterlength + strlen(temp2);
+    size_t totallength = start + afterlength + strlen(temp2);
     char *fin = malloc(totallength + 1);
     if (!fin)
     {
@@ -242,7 +242,7 @@ char *substituteStr(char *temp1, char *temp2, sizeT start, sizeT end)
     return fin;
 }
 
-int substituteWord(char **pstart, char **p, sizeT length,
+int substituteWord(char **pstart, char **p, size_t length,
                    char *(func)(char *),
                    int addQuotes)
 {
@@ -253,7 +253,7 @@ int substituteWord(char **pstart, char **p, sizeT length,
         return 0;
     }
     strncpy(temp, *p, length);
-    tmp[length--] = '\0';
+    temp[length--] = '\0';
 
     char *temp2;
     if (func)
@@ -280,7 +280,7 @@ int substituteWord(char **pstart, char **p, sizeT length,
         return 0;
     }
 
-    sizeT i = (*p) - (*pstart);
+    size_t i = (*p) - (*pstart);
 
     temp = quoteVal(temp2, addQuotes);
     free(temp2);
@@ -321,8 +321,8 @@ struct wordS *wordExpand(char *origWord)
     char *temp = pstart, *temp2;
     char *temp3;
     char c;
-    sizeT i = 0;
-    sizeT length;
+    size_t i = 0;
+    size_t length;
     int inDoubleQuotes = 0;
     int inVarAssign = 0;
     int varAssignEq = 0;
@@ -539,7 +539,7 @@ struct wordS *wordExpand(char *origWord)
 char *tildeExpand(char *s)
 {
     char *home = NULL;
-    sizeT length = strlen(s);
+    size_t length = strlen(s);
     char *s2 = NULL;
     struct symtabEntryS *ent;
 
@@ -591,7 +591,7 @@ char *varExpand(char *origVarName)
         return NULL;
     }
     origVarName++;
-    sizeT length = strlen(origVarName);
+    size_t length = strlen(origVarName);
     if (*origVarName == '{')
     {
         origVarName[length - 1] = '\0';
@@ -625,7 +625,7 @@ char *varExpand(char *origVarName)
         sub = strchrAny(origVarName, "-=?+%#");
     }
 
-    length = sub ? (sizeT)(sub - origVarName) : strlen(origVarName);
+    length = sub ? (size_t)(sub - origVarName) : strlen(origVarName);
 
     if (sub && *sub == ':')
     {
@@ -834,7 +834,7 @@ char *commandSubstitute(char *origCmd)
     strcpy(command, origCmd + (backquoted ? 1 : 2));
 
     char *command2 = command;
-    sizeT commandLength = strlen(command);
+    size_t commandLength = strlen(command);
 
     if (backquoted)
     {
@@ -970,9 +970,9 @@ void skipIFSWhitespace(char **str, char *IFS)
     *str = s2;
 }
 
-void skipIFSDelim(char *str, char *IFSSpace, char *IFSDelim, sizeT *_i, sizeT length)
+void skipIFSDelim(char *str, char *IFSSpace, char *IFSDelim, size_t *_i, size_t length)
 {
-    sizeT i = *_i;
+    size_t i = *_i;
 
     while ((i < length) && isIFSChar(str[i], IFSSpace))
     {
@@ -1041,8 +1041,8 @@ struct wordS *fieldSplit(char *str)
         *dp = '\0';
     }
 
-    sizeT length = strlen(str);
-    sizeT i = 0, j = 0, k;
+    size_t length = strlen(str);
+    size_t i = 0, j = 0, k;
     int fields = 1;
     char quote = 0;
 
@@ -1214,7 +1214,7 @@ struct wordS *pathnamesExpand(struct wordS *words)
             continue;
         }
 
-        globT glob;
+        glob_t glob;
         char **matches = getFilenameMatches(temp, &glob);
 
         if (!matches || !matches[0])
@@ -1225,7 +1225,7 @@ struct wordS *pathnamesExpand(struct wordS *words)
         {
             struct wordS *head = NULL, *tail = NULL;
 
-            for (sizeT j = 0; j < glob.gl_pathc; j++)
+            for (size_t j = 0; j < glob.gl_pathc; j++)
             {
                 if (matches[j][0] == '.' &&
                     (matches[j][1] == '.' || matches[j][1] == '\0' || matches[j][1] == '/'))

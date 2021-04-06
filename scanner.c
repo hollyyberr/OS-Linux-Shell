@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #include "shell.h"
 #include "scanner.h"
 #include "source.h"
@@ -10,15 +11,14 @@ char *tokenBuffer = NULL;
 int tokenBufferSize = 0;
 int tokenBufferIndex = -1;
 
-/* special token to indicate end of input */
 struct tokenS eofToken =
     {
         .textLength = 0,
 };
 
-void addToBuffer(char ch)
+void addToBuffer(char a)
 {
-    tokenBuffer[tokenBufferIndex++] = ch;
+    tokenBuffer[tokenBufferIndex++] = a;
 
     if (tokenBufferIndex >= tokenBufferSize)
     {
@@ -47,16 +47,16 @@ struct tokenS *createToken(char *str)
     memset(token, 0, sizeof(struct tokenS));
     token->textLength = strlen(str);
 
-    char *str2 = malloc(token->textLength + 1);
+    char *newstr = malloc(token->textLength + 1);
 
-    if (!str2)
+    if (!newstr)
     {
         free(token);
         return NULL;
     }
 
-    strcpy(str2, str);
-    token->text = str2;
+    strcpy(newstr, str);
+    token->text = newstr;
 
     return token;
 }
@@ -110,14 +110,17 @@ struct tokenS *tokenize(struct sourceS *src)
         case '"':
         case '\'':
         case '`':
+
             addToBuffer(newch);
             i = findClosingQuote(src->buffer + src->cursorPosition);
+
             if (!i)
             {
                 src->cursorPosition = src->bufferSize;
-                fprintf(stderr, "error: missing closing quote '%c'\n", newch);
+                fprintf(stderr, "Error: Missing closing quote '%c'\n", newch);
                 return &eofToken;
             }
+
             while (i--)
             {
                 addToBuffer(nextChar(src));
@@ -125,7 +128,9 @@ struct tokenS *tokenize(struct sourceS *src)
             break;
 
         case '\\':
+
             newch2 = nextChar(src);
+
             if (newch2 == '\n')
             {
                 break;
@@ -146,10 +151,11 @@ struct tokenS *tokenize(struct sourceS *src)
             if (newch == '{' || newch == '(')
             {
                 i = findClosingBrace(src->buffer + src->cursorPosition + 1);
+
                 if (!i)
                 {
                     src->cursorPosition = src->bufferSize;
-                    fprintf(stderr, "error: missing closing brace '%c'\n", newch);
+                    fprintf(stderr, "Error: Missing closing brace '%c'\n", newch);
                     return &eofToken;
                 }
 
@@ -158,12 +164,13 @@ struct tokenS *tokenize(struct sourceS *src)
                     addToBuffer(nextChar(src));
                 }
             }
-            else if (isalnum(newch) || newch == '*' || newch == '@' || newch == '#' ||
-                                       newch == '!' || newch == '?' || newch == '$')
+
+            else if (isalnum(newch) || newch == '*' || newch == '@' || newch == '#' || newch == '!' || newch == '?' || newch == '$')
             {
                 addToBuffer(nextChar(src));
             }
             break;
+
         case ' ':
         case '\t':
             if (tokenBufferIndex > 0)
@@ -210,7 +217,7 @@ struct tokenS *tokenize(struct sourceS *src)
     struct tokenS *token = createToken(tokenBuffer);
     if (!token)
     {
-        fprintf(stderr, "error: failed to alloc buffer: %s\n", strerror(errno));
+        fprintf(stderr, "Error: Could not alloc buffer: %s\n", strerror(errno));
         return &eofToken;
     }
 

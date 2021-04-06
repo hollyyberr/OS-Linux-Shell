@@ -14,13 +14,13 @@
 #include <sys/stat.h>
 #include "shell.h"
 
-int hasGlobChars(char *temp, sizeT length)
+int hasGlobChars(char *a, size_t length)
 {
-    char *temp2 = temp + length;
-    char openBrac = 0, closBrac = 0;
-    while (temp < temp2 && *temp)
+    char *b = a + length;
+    char openBrac = 0, closeBrac = 0;
+    while (a < b && *a)
     {
-        switch (*temp)
+        switch (*a)
         {
         case '*':
         case '?':
@@ -31,113 +31,113 @@ int hasGlobChars(char *temp, sizeT length)
             break;
 
         case ']':
-            closBrac++;
+            closeBrac++;
             break;
         }
-        temp++;
+        a++;
     }
-    if (openBrac && openBrac == closBrac)
+
+    if (openBrac && openBrac == closeBrac)
     {
         return 1;
     }
     return 0;
 }
 
-int matchPrefix(char *ptrn, char *str, int longest)
+int matchPrefix(char *ptrn, char *seg, int lng)
 {
-    if (!ptrn || !str)
+    if (!ptrn || !seg)
     {
         return 0;
     }
-    char *s = str + 1;
-    char c = *s;
-    char *sMatch = NULL;
+    char *a = seg + 1;
+    char b = *a;
+    char *aMatch = NULL;
     char *lMatch = NULL;
-    while (c)
+    while (b)
     {
-        *s = '\0';
-        if (fnmatch(ptrn, str, 0) == 0)
+        *a = '\0';
+        if (fnmatch(ptrn, seg, 0) == 0)
         {
-            if (!sMatch)
+            if (!aMatch)
             {
-                if (!longest)
+                if (!lng)
                 {
-                    *s = c;
-                    return s - str;
+                    *a = b;
+                    return a - seg;
                 }
-                sMatch = s;
+                aMatch = a;
             }
-            lMatch = s;
+            lMatch = a;
         }
-        *s = c;
-        c = *(++s);
+        *a = b;
+        b = *(++a);
     }
+    /* check the result of the comparison */
     if (lMatch)
     {
-        return lMatch - str;
+        return lMatch - seg;
     }
-    if (sMatch)
+    if (aMatch)
     {
-        return sMatch - str;
+        return aMatch - seg;
     }
     return 0;
 }
 
-int matchSuffix(char *ptrn, char *str, int longest)
+int matchSuffix(char *ptrn, char *a, int lng)
 {
-    if (!ptrn || !str)
+    if (!ptrn || !a)
     {
         return 0;
     }
-    char *s = str + strlen(str) - 1;
-    char *sMatch = NULL;
+    char *seg = a + strlen(a) - 1;
+    char *aMatch = NULL;
     char *lMatch = NULL;
-    while (s > str)
+    while (seg > a)
     {
-        if (fnmatch(ptrn, str, 0) == 0)
+        if (fnmatch(ptrn, a, 0) == 0)
         {
-            if (!sMatch)
+            if (!aMatch)
             {
-                if (!longest)
+                if (!lng)
                 {
-                    return s - str;
+                    return seg - a;
                 }
-                sMatch = s;
+                aMatch = seg;
             }
-            lMatch = s;
+            lMatch = seg;
         }
-        s--;
+        seg--;
     }
     if (lMatch)
     {
-        return lMatch - str;
+        return lMatch - a;
     }
-    if (sMatch)
+    if (aMatch)
     {
-        return sMatch - str;
+        return aMatch - a;
     }
     return 0;
 }
 
-char **getFilenameMatches(char *ptrn, globT *matches)
+char **getFilenameMatches(char *ptrn, glob_t *matches)
 {
-
-    matches->glPathc = 0;
-    matches->glPathv = NULL;
+    matches->gl_pathc = 0;
+    matches->gl_pathv = NULL;
 
     if (!ptrn)
     {
         return NULL;
     }
 
-    int res = glob(ptrn, 0, NULL, matches);
+    int result = glob(ptrn, 0, NULL, matches);
 
-    /* return the result */
-    if (res != 0)
+    if (result != 0)
     {
         globfree(matches);
         return NULL;
     }
 
-    return matches->glPathv;
+    return matches->gl_pathv;
 }

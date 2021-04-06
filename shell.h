@@ -3,16 +3,16 @@
 
 #include <stddef.h>
 #include <glob.h>
+#include "source.h"
 
 // Source code for shell activities
 void printPrompt1(void);
 void printPrompt2(void);
 
 char *readCommand(void);
-void initsh(void);
-
-#include "source.h"
 int parseAndExecute(struct sourceS *src);
+
+void initsh(void);
 
 // Shell built in utils
 int dump(int argc, char **argv);

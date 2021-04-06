@@ -4,7 +4,7 @@
 #include "node.h"
 
 char *searchPath(char *file);
-int doExecCommand(int argc, char **argv);
+int doExecCommand(int c, char **v);
 int doSimpleCommand(struct nodeS *node);
 
 #endif

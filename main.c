@@ -2,72 +2,63 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <stdbool.h>
 #include "shell.h"
 #include "source.h"
 #include "parser.h"
 #include "executor.h"
 
-int main(int argc, char **argv)
+
+int main(int c, char **v)
 {
     char *command;
 
     initsh();
+    
     do
     {
         printPrompt1();
-
         command = readCommand();
-
-        if (!command)
+        if(!command)
         {
             exit(EXIT_SUCCESS);
         }
-
-        if (command[0] == '\0' || strcmp(command, "\n") == 0)
+        if(command[0] == '\0' || strcmp(command, "\n") == 0)
         {
             free(command);
             continue;
         }
-
-        if (strcmp(command, "exit\n") == 0)
+        if(strcmp(command, "exit\n") == 0)
         {
             free(command);
             break;
         }
-
-        struct sourceS src;
+	struct sourceS src;
         src.buffer = command;
-        src.bufferSize = strlen(command);
-        src.cursorPosition = INIT_SRC_POS;
+        src.bufferSize  = strlen(command);
+        src.cursorPosition   = INIT_SRC_POS;
         parseAndExecute(&src);
-
         free(command);
-
-    } while (1);
-
+    } while(1);
     exit(EXIT_SUCCESS);
 }
+
 
 char *readCommand(void)
 {
     char buffer[1024];
     char *pointer = NULL;
-    char pointerLength = 0;
-
-    while (fgets(buffer, 1024, stdin))
+    char pointerLen = 0;
+    while(fgets(buffer, 1024, stdin))
     {
         int bufferLen = strlen(buffer);
-
-        if (!pointer)
+        if(!pointer)
         {
-            pointer = malloc(bufferLen + 1);
+            pointer = malloc(bufferLen+1);
         }
         else
         {
-            char *pointer2 = realloc(pointer, pointerLength + bufferLen + 1);
-
-            if (pointer2)
+            char *pointer2 = realloc(pointer, pointerLen+bufferLen+1);
+            if(pointer2)
             {
                 pointer = pointer2;
             }
@@ -77,32 +68,27 @@ char *readCommand(void)
                 pointer = NULL;
             }
         }
-
-        if (!pointer)
+        if(!pointer)
         {
-            fprintf(stderr, "error: failed to alloc buffer: %s\n", strerror(errno));
+            fprintf(stderr, "Error: Could not alloc buffer: %s\n", strerror(errno));
             return NULL;
         }
-
-        strcpy(pointer + pointerLength, buffer);
-
-        if (buffer[bufferLen - 1] == '\n')
+        strcpy(pointer+pointerLen, buffer);
+        if(buffer[bufferLen-1] == '\n')
         {
-            if (bufferLen == 1 || buffer[bufferLen - 2] != '\\')
+            if(bufferLen == 1 || buffer[bufferLen-2] != '\\')
             {
                 return pointer;
             }
-
-            pointer[pointerLength + bufferLen - 2] = '\0';
+            pointer[pointerLen+bufferLen-2] = '\0';
             bufferLen -= 2;
             printPrompt2();
         }
-
-        pointerLength += bufferLen;
+        pointerLen += bufferLen;
     }
-
     return pointer;
 }
+
 
 int parseAndExecute(struct sourceS *src)
 {
@@ -110,16 +96,16 @@ int parseAndExecute(struct sourceS *src)
 
     struct tokenS *token = tokenize(src);
 
-    if (token == &eofToken)
+    if(token == &eofToken)
     {
         return 0;
     }
 
-    while (token && token != &eofToken)
+    while(token && token != &eofToken)
     {
         struct nodeS *command = parseSimpleCommand(token);
 
-        if (!command)
+        if(!command)
         {
             break;
         }
@@ -128,6 +114,5 @@ int parseAndExecute(struct sourceS *src)
         freeNodeTree(command);
         token = tokenize(src);
     }
-
     return 1;
 }

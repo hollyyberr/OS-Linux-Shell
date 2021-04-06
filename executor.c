@@ -9,69 +9,71 @@
 #include "node.h"
 #include "executor.h"
 
+
 char *searchPath(char *file)
 {
     char *PATH = getenv("PATH");
-    char *p1 = PATH;
-    char *p2;
-
-    while (p1 && *p1)
+    char *a = PATH;
+    char *b;
+    
+    while(a && *a)
     {
-        p2 = p1;
+        b = a;
 
-        while (*p2 && *p2 != ':')
+        while(*b && *b != ':')
         {
-            p2++;
+            b++;
         }
-
-        int pLength = p2 - p1;
-        if (!pLength)
+        
+	int  pLength = b-a;
+        if(!pLength)
         {
             pLength = 1;
         }
-
-        int aLength = strlen(file);
-        char path[pLength + 1 + aLength + 1];
-
-        strncpy(path, p1, p2 - p1);
-        path[p2 - p1] = '\0';
-
-        if (p2[-1] != '/')
+        
+        int  aLength = strlen(file);
+        char path[pLength+1+aLength+1];
+        
+	strncpy(path, a, b-a);
+        path[b-a] = '\0';
+        
+	if(b[-1] != '/')
         {
             strcat(path, "/");
         }
 
         strcat(path, file);
-
-        struct stat st;
-        if (stat(path, &st) == 0)
+        
+	struct stat temp;
+        if(stat(path, &temp) == 0)
         {
-            if (!S_ISREG(st.st_mode))
+            if(!S_ISREG(temp.st_mode))
             {
                 errno = ENOENT;
-                p1 = p2;
-                if (*p2 == ':')
+                a = b;
+                if(*b == ':')
                 {
-                    p1++;
+                    a++;
                 }
                 continue;
             }
 
-            p1 = malloc(strlen(path) + 1);
-            if (!p1)
+            a = malloc(strlen(path)+1);
+            if(!a)
             {
                 return NULL;
             }
-
-            strcpy(p1, path);
-            return p1;
+            
+	    strcpy(a, path);
+            return a;
         }
-        else /* file not found */
+        else
         {
-            p1 = p2;
-            if (*p2 == ':')
+            // When file is not found
+            a = b;
+            if(*b == ':')
             {
-                p1++;
+                a++;
             }
         }
     }
@@ -80,113 +82,117 @@ char *searchPath(char *file)
     return NULL;
 }
 
-int doExecCommand(int argc, char **argv)
+
+int doExecCommand(int c, char **v)
 {
-    if (strchr(argv[0], '/'))
+    if(strchr(v[0], '/'))
     {
-        execv(argv[0], argv);
+        execv(v[0], v);
     }
     else
     {
-        char *path = searchPath(argv[0]);
-        if (!path)
+        char *path = searchPath(v[0]);
+        if(!path)
         {
             return 0;
         }
-        execv(path, argv);
+        execv(path, v);
         free(path);
     }
     return 0;
 }
 
-static inline void freeArgv(int argc, char **argv)
+
+static inline void freeArgv(int c, char **v)
 {
-    if (!argc)
+    if(!c)
     {
         return;
     }
 
-    while (argc--)
+    while(c--)
     {
-        free(argv[argc]);
+        free(v[c]);
     }
 }
 
+
 int doSimpleCommand(struct nodeS *node)
 {
-    if (!node)
+    if(!node)
     {
         return 0;
     }
 
     struct nodeS *child = node->firstChild;
-    if (!child)
+    if(!child)
     {
         return 0;
     }
-
-    int argc = 0;
-    int tArgc = 0;
+    
+    int argCount = 0;
+    int totalargCount = 0;
     char **argv = NULL;
     char *str;
 
-    while (child)
+    while(child)
     {
         str = child->val.str;
-        struct wordS *w = wordExpand(str);
+        struct wordS *word = wordExpand(str);
+        
 
-        if (!w)
+        if(!word)
         {
             child = child->nextSibling;
             continue;
         }
 
-        struct wordS *w2 = w;
-        while (w2)
+        struct wordS *word2 = word;
+        while(word2)
         {
-            if (checkBufferBounds(&argc, &tArgc, &argv))
+            if(checkBufferBounds(&argCount, &totalargCount, &argv))
             {
-                str = malloc(strlen(w2->data) + 1);
-                if (str)
+                str = malloc(strlen(word2->data)+1);
+                if(str)
                 {
-                    strcpy(str, w2->data);
-                    argv[argc++] = str;
+                    strcpy(str, word2->data);
+                    argv[argCount++] = str;
                 }
             }
-            w2 = w2->next;
+            word2 = word2->next;
         }
-
-        freeAllWords(w);
-
+        
+        freeAllWords(word);
+        
         child = child->nextSibling;
     }
 
-    if (checkBufferBounds(&argc, &tArgc, &argv))
+    if(checkBufferBounds(&argCount, &totalargCount, &argv))
     {
-        argv[argc] = NULL;
+        argv[argCount] = NULL;
     }
+
     int i = 0;
-    for (; i < builtinsCount; i++)
+    for( ; i < builtinsCount; i++)
     {
-
-        if (strcmp(argv[0], builtins[i].name) == 0)
+        if(strcmp(argv[0], builtins[i].name) == 0)
         {
-
-            builtins[i].func(argc, argv);
-            freeArgv(argc, argv);
+            builtins[i].func(argCount, argv);
+            freeBuffer(argCount, argv);
             return 1;
         }
     }
+
     pid_t childPid = 0;
-    if ((childPid = fork()) == 0)
+    if((childPid = fork()) == 0)
     {
-        doExecCommand(argc, argv);
-        fprintf(stderr, "error: Could not execute command: %s\n", strerror(errno));
-        if (errno == ENOEXEC)
+        doExecCommand(argCount, argv);
+        fprintf(stderr, "Error: Could not execute command: %s\n", strerror(errno));
+        if(errno == ENOEXEC)
         {
             exit(126);
         }
-        else if (errno == ENOENT)
+        else if(errno == ENOENT)
         {
             exit(127);
         }
@@ -195,17 +201,16 @@ int doSimpleCommand(struct nodeS *node)
             exit(EXIT_FAILURE);
         }
     }
-    else if (childPid < 0)
+    else if(childPid < 0)
     {
-        fprintf(stderr, "error: Could not fork command: %s\n", strerror(errno));
-        freeBuffer(argc, argv);
+        fprintf(stderr, "Error: Could not fork command: %s\n", strerror(errno));
+	    freeBuffer(argCount, argv);
         return 0;
     }
 
     int sts = 0;
     waitpid(childPid, &sts, 0);
-    freeBuffer(argc, argv);
-    // freeArgv(argc, argv);
-
+    freeBuffer(argCount, argv);
+    
     return 1;
 }

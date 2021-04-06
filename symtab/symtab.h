@@ -25,7 +25,7 @@ struct symtabEntryS
 struct symtabS
 /* Structure for individual table design */
 {
-    int level;
+    int lvl;
     struct symtabEntryS *first, *last;
 };
 

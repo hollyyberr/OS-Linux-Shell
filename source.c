@@ -2,52 +2,42 @@
 #include "shell.h"
 #include "source.h"
 
-void ungetChar(struct sourceS *src)
+void ungetChar(struct sourceS *s)
 {
-    if (src->cursorPosition < 0)
+    if (s->cursorPosition < 0)
     {
         return;
     }
-
-    src->cursorPosition--;
+    s->cursorPosition--;
 }
 
-char nextChar(struct sourceS *src)
+char nextChar(struct sourceS *s)
 {
-    if (!src || !src->buffer)
+    if (!s || !s->buffer)
     {
         errno = ENODATA;
         return ERRCHAR;
     }
-
-    char char1 = 0;
-    if (src->cursorPosition == INIT_SRC_POS)
+    if (s->cursorPosition == INIT_SRC_POS)
     {
-        src->cursorPosition = -1;
+        s->cursorPosition = -1;
     }
-    else
+    if (++s->cursorPosition >= s->bufferSize)
     {
-        char1 = src->buffer[src->cursorPosition];
-    }
-
-    if (++src->cursorPosition >= src->bufferSize)
-    {
-        src->cursorPosition = src->bufferSize;
+        s->cursorPosition = s->bufferSize;
         return EOF;
     }
-
-    return src->buffer[src->cursorPosition];
+    return s->buffer[s->cursorPosition];
 }
 
-char peekChar(struct sourceS *src)
+char peekChar(struct sourceS *s)
 {
-    if (!src || !src->buffer)
+    if (!s || !s->buffer)
     {
         errno = ENODATA;
         return ERRCHAR;
     }
-
-    long position = src->cursorPosition;
+    long position = s->cursorPosition;
 
     if (position == INIT_SRC_POS)
     {
@@ -55,25 +45,24 @@ char peekChar(struct sourceS *src)
     }
     position++;
 
-    if (position >= src->bufferSize)
+    if (position >= s->bufferSize)
     {
         return EOF;
     }
-
-    return src->buffer[position];
+    return s->buffer[position];
 }
 
-void skipWhiteSpaces(struct sourceS *src)
+void skipWhiteSpaces(struct sourceS *s)
 {
-    char ch;
+    char a;
 
-    if (!src || !src->buffer)
+    if (!s || !s->buffer)
     {
         return;
     }
 
-    while (((ch = peekChar(src)) != EOF) && (ch == ' ' || ch == '\t'))
+    while (((a = peekChar(s)) != EOF) && (a == ' ' || a == '\t'))
     {
-        nextChar(src);
+        nextChar(s);
     }
 }

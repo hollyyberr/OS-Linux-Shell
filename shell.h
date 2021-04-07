@@ -40,27 +40,27 @@ struct wordS
     struct wordS *next;
 };
 
-struct wordS *makeWord(char *str);
-void freeAllWords(struct wordS *first);
+struct wordS *makeWord(char *s);
+void freeAllWords(struct wordS *v1);
 
-char *wordlistToStr(struct wordS *word);
-void deleteCharAt(char *str, size_t ind);
-int isName(char *str);
-size_t findClosingQuote(char *data);
-size_t findClosingBrace(char *data);
-char *substituteStr(char *s1, char *s2, size_t start, size_t end);
-int substituteWord(char **pstart, char **p, size_t length, char *(func)(char *), int addQuotes);
-char *strchrAny(char *string, char *chars);
-char *quoteVal(char *val, int addQuotes);
-int checkBufferBounds(int *count, int *length, char ***buffer);
+char *wordlistToStr(struct wordS *w);
+void deleteCharAt(char *s, size_t ind);
+int isName(char *s);
+size_t findClosingQuote(char *d);
+size_t findClosingBrace(char *d);
+char *substituteStr(char *a, char *b, size_t aSize, size_t bSize);
+int substituteWord(char **begin, char **a, size_t length, char *(func)(char *), int addQuotes);
+char *strchrAny(char *s, char *cs);
+char *quoteVal(char *v, int addQuotes);
+int checkBufferBounds(int *cnt, int *length, char ***buffer);
 void freeBuffer(int length, char **buffer);
-char *tildeExpand(char *s);
-char *varExpand(char *origvarName);
-char *commandSubstitute(char *origCommand);
-char *arithmExpand(char *expr);
-struct wordS *fieldSplit(char *str);
-struct wordS *pathnamesExpand(struct wordS *words);
-void removeQuotes(struct wordS *wordlist);
-struct wordS *wordExpand(char *origWord);
+char *tildeExpand(char *a);
+char *varExpand(char *oVarName);
+char *commandSubstitute(char *oCommand);
+char *arithmExpand(char *exp);
+struct wordS *fieldSplit(char *s);
+struct wordS *pathnamesExpand(struct wordS *ws);
+void removeQuotes(struct wordS *wList);
+struct wordS *wordExpand(char *oWord);
 
 #endif

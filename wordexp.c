@@ -15,107 +15,96 @@
 
 #define INVALID_VAR ((char *)-1)
 
-struct wordS *makeWord(char *str)
+// Conversion for word to command token
+struct wordS *makeWord(char *s)
 {
-
-    struct wordS *word = malloc(sizeof(struct wordS));
-    if (!word)
+    struct wordS *w = malloc(sizeof(struct wordS));
+    if (!w)
     {
         return NULL;
     }
-
-    /* alloc string memory */
-    size_t length = strlen(str);
-    char *data = malloc(length + 1);
-
-    if (!data)
+    size_t length = strlen(s);
+    char *d = malloc(length + 1);
+    if (!d)
     {
-        free(word);
+        free(w);
         return NULL;
     }
-
-    /* copy string */
-    strcpy(data, str);
-    word->data = data;
-    word->length = length;
-    word->next = NULL;
-
-    /* return struct */
-    return word;
+    strcpy(d, s);
+    w->data = d;
+    w->length = length;
+    w->next = NULL;
+    return w;
 }
 
-/*
- * free the memory used by a list of words.
- */
-void freeAllWords(struct wordS *f)
+// Free previously used memory
+void freeAllWords(struct wordS *v1)
 {
-    while (f)
+    while (v1)
     {
-        struct wordS *del = f;
-        f = f->next;
+        struct wordS *d = v1;
+        v1 = v1->next;
 
-        if (del->data)
+        if (d->data)
         {
-            /* free the word text */
-            free(del->data);
+            free(d->data);
         }
-
-        /* free the word */
-        free(del);
+        free(d);
     }
 }
 
-char *wordlistToTtr(struct wordS *word)
+// Convert token tree to command string
+char *wordlistToStr(struct wordS *w)
 {
-    if (!word)
+    if (!w)
     {
         return NULL;
     }
     size_t length = 0;
-    struct wordS *temp = word;
-    while (temp)
+    struct wordS *w2 = w;
+    while (w2)
     {
-        length += temp->length + 1;
-        temp = temp->next;
+        length += w2->length + 1;
+        w2 = w2->next;
     }
-    char *str = malloc(length + 1);
-    if (!str)
+    char *s = malloc(length + 1);
+    if (!s)
     {
         return NULL;
     }
-    char *temp2 = str;
-    temp = word;
-    while (temp)
+    char *s2 = s;
+    w2 = w;
+    while (w2)
     {
-        sprintf(temp2, "%s ", temp->data);
-        temp2 += temp->length + 1;
-        temp = temp->next;
+        sprintf(s2, "%s ", w2->data);
+        s2 += w2->length + 1;
+        w2 = w2->next;
     }
-    temp2[-1] = '\0';
-    return str;
+    s2[-1] = '\0';
+    return s;
 }
 
-void deleteCharAt(char *str, size_t ind)
+// Delete character at index param
+void deleteCharAt(char *s, size_t ind)
 {
-    char *temp1 = str + ind;
-    char *temp2 = temp1 + 1;
-    while ((*temp1++ = *temp2++))
+    char *a = s + ind;
+    char *b = a + 1;
+    while ((*a++ = *b++))
     {
         ;
     }
 }
 
-int isName(char *str)
+// Validates string parameter
+int isName(char *s)
 {
-
-    if (!isalpha(*str) && *str != '_')
+    if (!isalpha(*s) && *s != '_')
     {
         return 0;
     }
-
-    while (*++str)
+    while (*++s)
     {
-        if (!isalnum(*str) && *str != '_')
+        if (!isalnum(*s) && *s != '_')
         {
             return 0;
         }
@@ -123,20 +112,20 @@ int isName(char *str)
     return 1;
 }
 
-size_t findClosingQuote(char *dat)
+// Matches closing + opening quotes
+size_t findClosingQuote(char *d)
 {
-    char q = dat[0];
+    char q = d[0];
     if (q != '\'' && q != '"' && q != '`')
     {
         return 0;
     }
-
-    size_t i = 0, length = strlen(dat);
+    size_t i = 0, length = strlen(d);
     while (++i < length)
     {
-        if (dat[i] == q)
+        if (d[i] == q)
         {
-            if (dat[i - 1] == '\\')
+            if (d[i - 1] == '\\')
             {
                 if (q != '\'')
                 {
@@ -149,35 +138,36 @@ size_t findClosingQuote(char *dat)
     return 0;
 }
 
-size_t findClosingBrace(char *dat)
+// Matches closing + opening braces
+size_t findClosingBrace(char *d)
 {
-    char openingBrace = dat[0], closingBrace;
-    if (openingBrace != '{' && openingBrace != '(')
+    char openBrace = d[0], closeBrace;
+    if (openBrace != '{' && openBrace != '(')
     {
         return 0;
     }
-    if (openingBrace == '{')
+    if (openBrace == '{')
     {
-        closingBrace = '}';
+        closeBrace = '}';
     }
     else
     {
-        closingBrace = ')';
+        closeBrace = ')';
     }
-    size_t obCount = 1, cbCount = 0;
-    size_t i = 0, length = strlen(dat);
+    size_t openCount = 1, closeCount = 0;
+    size_t i = 0, length = strlen(d);
     while (++i < length)
     {
-        if ((dat[i] == '"') || (dat[i] == '\'') || (dat[i] == '`'))
+        if ((d[i] == '"') || (d[i] == '\'') || (d[i] == '`'))
         {
-            if (dat[i - 1] == '\\')
+            if (d[i - 1] == '\\')
             {
                 continue;
             }
-            char q = dat[i];
+            char q = d[i];
             while (++i < length)
             {
-                if (dat[i] == q && dat[i - 1] != '\\')
+                if (d[i] == q && d[i - 1] != '\\')
                 {
                     break;
                 }
@@ -188,359 +178,343 @@ size_t findClosingBrace(char *dat)
             }
             continue;
         }
-        if (dat[i - 1] != '\\')
+        if (d[i - 1] != '\\')
         {
-            if (dat[i] == openingBrace)
+            if (d[i] == openBrace)
             {
-                obCount++;
+                openCount++;
             }
-            else if (dat[i] == closingBrace)
+            else if (d[i] == closeBrace)
             {
-                cbCount++;
+                closeCount++;
             }
         }
-        if (obCount == cbCount)
+        if (openCount == closeCount)
         {
             break;
         }
     }
-    if (obCount != cbCount)
+    if (openCount != closeCount)
     {
         return 0;
     }
     return i;
 }
 
-char *substituteStr(char *temp1, char *temp2, size_t start, size_t end)
+// Substitute strings from start to end
+char *substituteStr(char *a, char *b, size_t aSize, size_t bSize)
 {
-
-    char bef[start + 1];
-    strncpy(bef, temp1, start);
-    bef[start] = '\0';
-
-    size_t afterlength = strlen(temp1) - end + 1;
-    char after[afterlength];
-    strcpy(after, temp1 + end + 1);
-
-    size_t totallength = start + afterlength + strlen(temp2);
-    char *fin = malloc(totallength + 1);
+    char bef[aSize + 1];
+    strncpy(bef, a, aSize);
+    bef[aSize] = '\0';
+    size_t afterLength = strlen(a) - bSize + 1;
+    char aft[afterLength];
+    strcpy(aft, a + bSize + 1);
+    size_t totalLength = aSize + bSize + strlen(b);
+    char *fin = malloc(totalLength + 1);
     if (!fin)
     {
-        fprintf(stderr, "error: insufficient memory to perform variable substitution\n");
+        fprintf(stderr, "Error: Not enough memory to perform variable substitution\n");
         return NULL;
     }
-    if (!totallength)
+    if (!totalLength)
     {
         fin[0] = '\0';
     }
     else
     {
         strcpy(fin, bef);
-        strcat(fin, temp2);
-        strcat(fin, after);
+        strcat(fin, b);
+        strcat(fin, aft);
     }
     return fin;
 }
 
-int substituteWord(char **pstart, char **p, size_t length,
-                   char *(func)(char *),
-                   int addQuotes)
+int substitute_word(char **begin, char **a, size_t length, char *(func)(char *), int addQuotes)
 {
-    char *temp = malloc(length + 1);
-    if (!temp)
+    char *t = malloc(length + 1);
+    if (!t)
     {
-        (*p) += length;
+        (*a) += length;
         return 0;
     }
-    strncpy(temp, *p, length);
-    temp[length--] = '\0';
-
-    char *temp2;
+    strncpy(t, *a, length);
+    t[length--] = '\0';
+    char *t2;
     if (func)
     {
-        temp2 = func(temp);
-        if (temp2 == INVALID_VAR)
+        t2 = func(t);
+        if (t2 == INVALID_VAR)
         {
-            temp2 = NULL;
+            t2 = NULL;
         }
-        if (temp2)
+        if (t2)
         {
-            free(temp);
+            free(t);
         }
     }
     else
     {
-        temp2 = temp;
+        t2 = t;
     }
 
-    if (!temp2)
+    if (!t2)
     {
-        (*p) += length;
-        free(temp);
+        (*a) += length;
+        free(t);
         return 0;
     }
 
-    size_t i = (*p) - (*pstart);
+    size_t i = (*a) - (*begin);
 
-    temp = quoteVal(temp2, addQuotes);
-    free(temp2);
-    if (temp)
+    t = quoteVal(t2, addQuotes);
+    free(t2);
+    if (t)
     {
-        if ((temp2 = substitute_str(*pstart, temp, i, i + length)))
+        if ((t2 = substituteStr(*begin, t, i, i + length)))
         {
-            free(*pstart);
-            (*pstart) = temp2;
-            length = strlen(temp);
+            free(*begin);
+            (*begin) = t2;
+            length = strlen(t);
         }
-        free(temp);
+        free(t);
     }
 
-    (*p) = (*pstart) + i + length - 1;
+    (*a) = (*begin) + i + length - 1;
     return 1;
 }
 
-struct wordS *wordExpand(char *origWord)
+// Expand single word
+struct wordS *wordExpand(char *oWord)
 {
-    if (!origWord)
+    if (!oWord)
     {
         return NULL;
     }
-
-    if (!*origWord)
+    if (!*oWord)
     {
-        return makeWord(origWord);
+        return makeWord(oWord);
     }
-
-    char *pstart = malloc(strlen(origWord) + 1);
-    if (!pstart)
+    char *begin = malloc(strlen(oWord) + 1);
+    if (!begin)
     {
         return NULL;
     }
-    strcpy(pstart, origWord);
+    strcpy(begin, oWord);
 
-    char *temp = pstart, *temp2;
-    char *temp3;
-    char c;
+    char *a = begin, *b;
+    char *t;
+    char let;
     size_t i = 0;
     size_t length;
-    int inDoubleQuotes = 0;
-    int inVarAssign = 0;
-    int varAssignEq = 0;
-    int expanded = 0;
+    int doubleQuotes = 0;
+    int varAssign = 0;
+    int varAssignEQ = 0;
+    int expd = 0;
     char *(*func)(char *);
 
     do
     {
-        switch (*temp)
+        switch (*a)
         {
         case '~':
-            if (inDoubleQuotes)
+            if (doubleQuotes)
             {
                 break;
             }
-            if (temp == pstart || (inVarAssign && (temp[-1] == ':' || (temp[-1] == '=' && varAssignEq == 1))))
+            if (a == begin || (varAssign && (a[-1] == ':' || (a[-1] == '=' && varAssignEQ == 1))))
             {
                 int tildeQuoted = 0;
-                int endme = 0;
-                temp2 = temp + 1;
+                int end = 0;
+                b = a + 1;
 
-                while (*temp2)
+                while (*b)
                 {
-                    switch (*temp2)
+                    switch (*b)
                     {
                     case '\\':
                         tildeQuoted = 1;
-                        temp2++;
+                        b++;
                         break;
 
                     case '"':
                     case '\'':
-                        i = findClosingQuote(temp2);
+                        i = findClosingQuote(b);
                         if (i)
                         {
                             tildeQuoted = 1;
-                            temp2 += i;
+                            b += i;
                         }
                         break;
 
                     case '/':
-                        endme = 1;
+                        end = 1;
                         break;
 
                     case ':':
-                        if (inVarAssign)
+                        if (varAssign)
                         {
-                            endme = 1;
+                            end = 1;
                         }
                         break;
                     }
-                    if (endme)
+                    if (end)
                     {
                         break;
                     }
-                    temp2++;
+                    b++;
                 }
                 if (tildeQuoted)
                 {
-                    temp = temp2;
+                    a = b;
                     break;
                 }
-
-                length = temp2 - temp;
-                substituteWord(&pstart, &temp, length, tildeExpand, !inDoubleQuotes);
-                expanded = 1;
+                length = b - a;
+                substituteWord(&begin, &a, length, tildeExpand, !doubleQuotes);
+                expd = 1;
             }
             break;
 
         case '"':
-            inDoubleQuotes = !inDoubleQuotes;
+            doubleQuotes = !doubleQuotes;
             break;
-
         case '=':
-            if (inDoubleQuotes)
+            if (doubleQuotes)
             {
                 break;
             }
-            length = temp - pstart;
-            temp3 = malloc(length + 1);
-
-            if (!temp3)
+            length = a - begin;
+            t = malloc(length + 1);
+            if (!t)
             {
-                fprintf(stderr, "error: insufficient memory for internal buffers\n");
+                fprintf(stderr, "Error: Not enough memory for internal buffers\n");
                 break;
             }
+            strncpy(t, begin, length);
+            t[length] = '\0';
 
-            strncpy(temp3, pstart, length);
-            temp3[length] = '\0';
-
-            if (isName(temp3))
+            if (isName(t))
             {
-                inVarAssign = 1;
-                varAssignEq++;
+                varAssign = 1;
+                varAssignEQ++;
             }
-            free(temp3);
+            free(t);
             break;
 
         case '\\':
-            temp++;
+            a++;
             break;
-
         case '\'':
-            if (inDoubleQuotes)
+            if (doubleQuotes)
             {
                 break;
             }
-            temp += findClosingQuote(temp);
+
+            a += findClosingQuote(p);
             break;
 
         case '`':
-            if ((length = findClosingQuote(temp)) == 0)
+            if ((length = findClosingQuote(a)) == 0)
             {
                 break;
             }
-            substituteWord(&pstart, &temp, length + 1, commandSubstitute, 0);
-            expanded = 1;
+            substituteWord(&begin, &a, length + 1, commandSubstitute, 0);
+            expd = 1;
             break;
+
         case '$':
-            c = temp[1];
-            switch (c)
+            let = a[1];
+            switch (let)
             {
             case '{':
-                if ((length = findClosingBrace(temp + 1)) == 0)
+                if ((length = findClosingBrace(a + 1)) == 0)
                 {
                     break;
                 }
-                if (!substituteWord(&pstart, &temp, length + 2, varExpand, 0))
+
+                if (!substituteWord(&begin, &a, length + 2, varExpand, 0))
                 {
-                    free(pstart);
+                    free(begin);
                     return NULL;
                 }
-
-                expanded = 1;
+                expd = 1;
                 break;
 
             case '(':
                 i = 0;
-
-                if (temp[2] == '(')
+                if (a[2] == '(')
                 {
                     i++;
                 }
-
-                if ((length = findClosingBrace(temp + 1)) == 0)
+                if ((length = findClosingBrace(a + 1)) == 0)
                 {
                     break;
                 }
                 func = i ? arithmExpand : commandSubstitute;
-                substitute_word(&pstart, &temp, length + 2, func, 0);
-                expanded = 1;
+                substituteWord(&begin, &a, length + 2, func, 0);
+                expd = 1;
                 break;
 
             default:
-                if (!isalpha(temp[1]) && temp[1] != '_')
+                if (!isalpha(a[1]) && a[1] != '_')
                 {
                     break;
                 }
-
-                temp2 = temp + 1;
-
-                while (*temp2)
+                b = a + 1;
+                while (*b)
                 {
-                    if (!isalnum(*temp2) && *temp2 != '_')
+                    if (!isalnum(*b) && *b != '_')
                     {
                         break;
                     }
-                    temp2++;
+                    b++;
                 }
-                if (temp2 == temp + 1)
+                if (b == a + 1)
                 {
                     break;
                 }
-
-                substitute_word(&pstart, &temp, temp2 - temp, varExpand, 0);
-                expanded = 1;
+                substituteWord(&begin, &a, b - a, varExpand, 0);
+                expd = 1;
                 break;
             }
             break;
-
         default:
-            if (isspace(*temp) && !inDoubleQuotes)
+            if (isspace(*a) && !doubleQuotes)
             {
-                expanded = 1;
+                expd = 1;
             }
             break;
         }
-    } while (*(++temp));
+    } while (*(++a));
 
-    struct wordS *words = NULL;
-    if (expanded)
+    struct wordS *ws = NULL;
+    if (expd)
     {
-        words = fieldSplit(pstart);
+        ws = fieldSplit(begin);
     }
 
-    if (!words)
+    if (!ws)
     {
-        words = makeWord(pstart);
-        if (!words)
+        ws = makeWord(begin);
+        if (!ws)
         {
-            fprintf(stderr, "error: insufficient memory\n");
-            free(pstart);
+            fprintf(stderr, "Error: Not enough memory\n");
+            free(begin);
             return NULL;
         }
     }
-    free(pstart);
-
-    words = pathnamesExpand(words);
-    removeQuotes(words);
-
-    return words;
+    free(begin);
+    ws = pathnamesExpand(ws);
+    removeQuotes(ws);
+    return ws;
 }
 
-char *tildeExpand(char *s)
+// Tilde expansion on character
+char *tilde_expand(char *a)
 {
-    char *home = NULL;
-    size_t length = strlen(s);
-    char *s2 = NULL;
+    char *h = NULL;
+    size_t length = strlen(a);
+    char *b = NULL;
     struct symtabEntryS *ent;
 
     if (length == 1)
@@ -548,126 +522,126 @@ char *tildeExpand(char *s)
         ent = getSymtabEntry("HOME");
         if (ent && ent->val)
         {
-            home = ent->val;
+            h = ent->val;
         }
         else
         {
-            struct passwd *pass;
-            pass = getpwuid(getuid());
-            if (pass)
+            struct passwd *p;
+            p = getpwuid(getuid());
+            if (p)
             {
-                home = pass->pw_dir;
+                h = p->pw_dir;
             }
         }
     }
     else
     {
-        struct passwd *pass;
-        pass = getpwnam(s + 1);
-        if (pass)
+        struct passwd *p;
+        p = getpwnam(a + 1);
+        if (p)
         {
-            home = pass->pw_dir;
+            h = p->pw_dir;
         }
     }
 
-    if (!home)
+    if (!h)
     {
         return NULL;
     }
 
-    s2 = malloc(strlen(home) + 1);
-    if (!s2)
+    b = malloc(strlen(h) + 1);
+    if (!b)
     {
         return NULL;
     }
-    strcpy(s2, home);
-    return s2;
+    strcpy(b, h);
+    return b;
 }
 
-char *varExpand(char *origVarName)
+// Variable Expansion
+char *varExpand(char *oVarName)
 {
-    if (!origVarName)
+    if (!oVarName)
     {
         return NULL;
     }
-    origVarName++;
-    size_t length = strlen(origVarName);
-    if (*origVarName == '{')
+    oVarName++;
+    size_t length = strlen(oVarName);
+    if (*oVarName == '{')
     {
-        origVarName[length - 1] = '\0';
-        origVarName++;
+        oVarName[length - 1] = '\0';
+        oVarName++;
     }
-    if (!*origVarName)
+
+    if (!*oVarName)
     {
         return NULL;
     }
 
-    int getLength = 0;
-    if (*origVarName == '#')
+    int gLen = 0;
+    if (*oVarName == '#')
     {
-        if (strchr(origVarName, ':'))
+        if (strchr(oVarName, ':'))
         {
-            fprintf(stderr, "error: invalid variable substitution: %s\n", origVarName);
+            fprintf(stderr, "Error: Cannot substitute variable: %s\n", oVarName);
             return INVALID_VAR;
         }
-        getLength = 1;
-        origVarName++;
+        gLen = 1;
+        oVarName++;
     }
 
-    if (!*origVarName)
+    if (!*oVarName)
     {
         return NULL;
     }
 
-    char *sub = strchr(origVarName, ':');
-    if (!sub)
+    char *subst = strchr(oVarName, ':');
+    if (!subst)
     {
-        sub = strchrAny(origVarName, "-=?+%#");
+        subst = strchr_any(oVarName, "-=?+%#");
     }
 
-    length = sub ? (size_t)(sub - origVarName) : strlen(origVarName);
+    length = subst ? (size_t)(subst - oVarName) : strlen(oVarName);
 
-    if (sub && *sub == ':')
+    if (subst && *subst == ':')
     {
-        sub++;
+        subst++;
     }
 
-    char varName[length + 1];
-    strncpy(varName, origVarName, length);
-    varName[length] = '\0';
+    char varChar[length + 1];
+    strncpy(varChar, oVarName, length);
+    varChar[length] = '\0';
 
-    char *emptyVal = "";
+    char *empVal = "";
     char *temp = NULL;
     char set = 0;
 
-    struct symtabEntryS *ent = getSymtabEntry(varName);
-    temp = (ent && ent->val && ent->val[0]) ? ent->val : emptyVal;
+    struct symtabEntryS *ent = getSymtabEntry(varChar);
+    temp = (ent && ent->val && ent->val[0]) ? ent->val : empVal;
 
-    if (!temp || temp == emptyVal)
+    if (!temp || temp == empVal)
     {
-        if (sub && *sub)
+        if (subst && *subst)
         {
-            switch (sub[0])
+            switch (subst[0])
             {
             case '-':
-                temp = sub + 1;
+                temp = subst + 1;
                 break;
 
             case '=':
-
-                temp = sub + 1;
-
+                temp = subst + 1;
                 set = 1;
                 break;
 
             case '?':
-                if (sub[1] == '\0')
+                if (subst[1] == '\0')
                 {
-                    fprintf(stderr, "error: %s: parameter not set\n", varName);
+                    fprintf(stderr, "error: %s: Parameter is not set\n", varChar);
                 }
                 else
                 {
-                    fprintf(stderr, "error: %s: %s\n", varName, sub + 1);
+                    fprintf(stderr, "error: %s: %s\n", varChar, subst + 1);
                 }
                 return INVALID_VAR;
 
@@ -684,14 +658,14 @@ char *varExpand(char *origVarName)
         }
         else
         {
-            temp = emptyVal;
+            temp = empVal;
         }
     }
     else
     {
-        if (sub && *sub)
+        if (subst && *subst)
         {
-            switch (sub[0])
+            switch (subst[0])
             {
             case '-':
             case '=':
@@ -699,58 +673,66 @@ char *varExpand(char *origVarName)
                 break;
 
             case '+':
-                temp = sub + 1;
+                temp = subst + 1;
                 break;
 
             case '%':
-                sub++;
-
-                char *p = wordExpandToStr(temp);
-                if (!p)
+                subst++;
+                char *c = wordExpandToStr(temp);
+                if (!c)
                 {
                     return INVALID_VAR;
                 }
-                int longest = 0;
-                if (*sub == '%')
+
+                int lng = 0;
+                if (*subst == '%')
                 {
-                    longest = 1, sub++;
+                    lng = 1;
+                    subst++;
                 }
-                if ((length = matchSuffix(sub, p, longest)) == 0)
+
+                if ((length = matchSuffix(subst, c, lng)) == 0)
                 {
-                    return p;
+                    return c;
                 }
-                char *p2 = malloc(length + 1);
-                if (p2)
+
+                char *c2 = malloc(length + 1);
+                if (c2)
                 {
-                    strncpy(p2, p, length);
-                    p2[length] = '\0';
+                    strncpy(c2, c, length);
+                    c2[length] = '\0';
                 }
-                free(p);
-                return p2;
+                free(c);
+                return c2;
 
             case '#':
-                sub++;
-                p = wordExpandToStr(temp);
-                if (!p)
+                subst++;
+                c = wordExpandToStr(temp);
+
+                if (!c)
                 {
                     return INVALID_VAR;
                 }
-                longest = 0;
-                if (*sub == '#')
+
+                lng = 0;
+                if (*subst == '#')
                 {
-                    longest = 1, sub++;
+                    lng = 1;
+                    subst++;
                 }
-                if ((length = matchPrefix(sub, p, longest)) == 0)
+
+                if ((length = matchPrefix(subst, c, lng)) == 0)
                 {
-                    return p;
+                    return c;
                 }
-                p2 = malloc(strlen(p) - length + 1);
-                if (p2)
+
+                c2 = malloc(strlen(c) - length + 1);
+                if (c2)
                 {
-                    strcpy(p2, p + length);
+                    strcpy(c2, c + length);
                 }
-                free(p);
-                return p2;
+                free(c);
+                return c2;
 
             default:
                 return INVALID_VAR;
@@ -758,12 +740,12 @@ char *varExpand(char *origVarName)
         }
     }
 
-    int expanded = 0;
+    int expd = 0;
     if (temp)
     {
         if ((temp = wordExpandToStr(temp)))
         {
-            expanded = 1;
+            expd = 1;
         }
     }
 
@@ -771,8 +753,9 @@ char *varExpand(char *origVarName)
     {
         if (!ent)
         {
-            ent = addToSymtab(varName);
+            ent = addToSymtab(varChar);
         }
+
         if (ent)
         {
             symtabEntrySetval(ent, temp);
@@ -780,8 +763,8 @@ char *varExpand(char *origVarName)
     }
 
     char buffer[32];
-    char *p = NULL;
-    if (getLength)
+    char *c = NULL;
+    if (gLen)
     {
         if (!temp)
         {
@@ -791,172 +774,166 @@ char *varExpand(char *origVarName)
         {
             sprintf(buffer, "%lu", strlen(temp));
         }
-        p = malloc(strlen(buffer) + 1);
-        if (p)
+        c = malloc(strlen(buffer) + 1);
+        if (c)
         {
-            strcpy(p, buffer);
+            strcpy(c, buffer);
         }
     }
     else
     {
-        p = malloc(strlen(temp) + 1);
-        if (p)
+        c = malloc(strlen(temp) + 1);
+        if (c)
         {
-            strcpy(p, temp);
+            strcpy(c, temp);
         }
     }
 
-    if (expanded)
+    if (expd)
     {
         free(temp);
     }
 
-    return p ?: INVALID_VAR;
+    return c ?: INVALID_VAR;
 }
 
-char *commandSubstitute(char *origCmd)
+// Command Substitution
+char *commandSubstitute(char *oCommand)
 {
-    char br[1024];
+    char buffer[1024];
     size_t bufferSize = 0;
-    char *buffer = NULL;
-    char *p = NULL;
+    char *bufferChar = NULL;
+    char *a = NULL;
     int i = 0;
-    int backquoted = (*origCmd == '`');
-
-    char *command = malloc(strlen(origCmd + 1));
+    int bQuote = (*oCommand == '`');
+    char *command = malloc(strlen(oCommand + 1));
 
     if (!command)
     {
-        fprintf(stderr, "error: insufficient memory to perform command substitution\n");
+        fprintf(stderr, "Error: Not enough memory to perform command substitution\n");
         return NULL;
     }
 
-    strcpy(command, origCmd + (backquoted ? 1 : 2));
-
+    strcpy(command, oCommand + (bQuote ? 1 : 2));
     char *command2 = command;
-    size_t commandLength = strlen(command);
+    size_t commandLen = strlen(command);
 
-    if (backquoted)
+    if (bQuote)
     {
-        if (command[commandLength - 1] == '`')
+        if (command[commandLen - 1] == '`')
         {
-            command[commandLength - 1] = '\0';
+            command[commandLen - 1] = '\0';
         }
-
-        char *p1 = command;
-
+        char *a1 = command;
         do
         {
-            if (*p1 == '\\' &&
-                (p1[1] == '$' || p1[1] == '`' || p1[1] == '\\'))
+            if (*a1 == '\\' && (a1[1] == '$' || a1[1] == '`' || a1[1] == '\\'))
             {
-                char *p2 = p1, *p3 = p1 + 1;
-                while ((*p2++ = *p3++))
+                char *b2 = a1;
+                char *c3 = a1 + 1;
+                while ((*b2++ = *c3++))
                 {
                     ;
                 }
             }
-        } while (*(++p1));
+        } while (*(++a1));
     }
     else
     {
-        if (command[commandLength - 1] == ')')
+        if (command[commandLen - 1] == ')')
         {
-            command[commandLength - 1] = '\0';
+            command[commandLen - 1] = '\0';
         }
     }
 
-    FILE *fp = popen(command2, "r");
+    FILE *fileP = popen(command2, "r");
 
-    if (!fp)
+    if (!fileP)
     {
         free(command2);
-        fprintf(stderr, "error: failed to open pipe: %s\n", strerror(errno));
+        fprintf(stderr, "Error: Could not open pipe: %s\n", strerror(errno));
         return NULL;
     }
 
-    while ((i = fread(br, 1, 1024, fp)))
+    while ((i = fread(buffer, 1, 1024, fileP)))
     {
-        if (!buffer)
+        if (!bufferChar)
         {
-            buffer = malloc(i + 1);
-            if (!buffer)
+            bufferChar = malloc(i + 1);
+            if (!bufferChar)
             {
                 goto fin;
             }
-
-            p = buffer;
+            a = bufferChar;
         }
         else
         {
-            char *buffer2 = realloc(buffer, bufferSize + i + 1);
+            char *bufferChar2 = realloc(bufferChar, bufferSize + i + 1);
 
-            if (!buffer2)
+            if (!bufferChar2)
             {
-                free(buffer);
-                buffer = NULL;
+                free(bufferChar);
+                bufferChar = NULL;
                 goto fin;
             }
 
-            buffer = buffer2;
-            p = buffer + bufferSize;
+            bufferChar = bufferChar2;
+            a = bufferChar + bufferSize;
         }
-
         bufferSize += i;
-
-        memcpy(p, br, i);
-        p[i] = '\0';
+        memcpy(a, buffer, i);
+        a[i] = '\0';
     }
-
     if (!bufferSize)
     {
         free(command2);
         return NULL;
     }
-
     i = bufferSize - 1;
 
-    while (buffer[i] == '\n' || buffer[i] == '\r')
+    while (bufferChar[i] == '\n' || bufferChar[i] == '\r')
     {
-        buffer[i] = '\0';
+        bufferChar[i] = '\0';
         i--;
     }
 
 fin:
-    pclose(fp);
+    // Close pipe
+    pclose(fileP);
 
+    // Free mem
     free(command2);
 
-    if (!buffer)
+    if (!bufferChar)
     {
-        fprintf(stderr, "error: insufficient memory to perform command substitution\n");
+        fprintf(stderr, "Error: Not enough memory to perform command substitution\n");
     }
 
-    return buffer;
+    return bufferChar;
 }
 
-static inline int isIFSChar(char c, char *IFS)
+// Check if char is a valid character
+static inline int isIFSchar(char a, char *IFS)
 {
     if (!*IFS)
     {
         return 0;
     }
-
     do
     {
-        if (c == *IFS)
+        if (a == *IFS)
         {
             return 1;
         }
     } while (*++IFS);
-
     return 0;
 }
 
-void skipIFSWhitespace(char **str, char *IFS)
+// Skip whitespace
+void skipIFSwhitespace(char **s1, char *IFS)
 {
     char *IFS2 = IFS;
-    char *s2 = *str;
+    char *s2 = *s1;
 
     do
     {
@@ -967,210 +944,201 @@ void skipIFSWhitespace(char **str, char *IFS)
         }
     } while (*++IFS2);
 
-    *str = s2;
+    *s1 = s2;
 }
 
-void skipIFSDelim(char *str, char *IFSSpace, char *IFSDelim, size_t *_i, size_t length)
+// Skip delimiters
+void skipIFSdelimiters(char *s, char *IFSspace, char *IFSdelim, size_t *ind, size_t length)
 {
-    size_t i = *_i;
-
-    while ((i < length) && isIFSChar(str[i], IFSSpace))
+    size_t i = *ind;
+    while ((i < length) && isIFSchar(s[i], IFSspace))
     {
         i++;
     }
-
-    while ((i < length) && isIFSChar(str[i], IFSDelim))
+    while ((i < length) && isIFSchar(s[i], IFSdelim))
     {
         i++;
     }
-
-    while ((i < length) && isIFSChar(str[i], IFSSpace))
+    while ((i < length) && isIFSchar(s[i], IFSspace))
     {
         i++;
     }
-
-    *_i = i;
+    *ind = i;
 }
 
-struct wordS *fieldSplit(char *str)
+// Coverts words to separate fields
+struct wordS *fieldSplit(char *s)
 {
     struct symtabEntryS *ent = getSymtabEntry("IFS");
     char *IFS = ent ? ent->val : NULL;
-    char *p;
+    char *a;
 
     if (!IFS)
     {
         IFS = " \t\n";
     }
-
     if (IFS[0] == '\0')
     {
         return NULL;
     }
 
-    char IFSSpace[64];
-    char IFSDelim[64];
+    char IFSspace[64];
+    char IFSdelim[64];
 
     if (strcmp(IFS, " \t\n") == 0)
     {
-        IFSSpace[0] = ' ';
-        IFSSpace[1] = '\t';
-        IFSSpace[2] = '\n';
-        IFSSpace[3] = '\0';
-        IFSDelim[0] = '\0';
+        IFSspace[0] = ' ';
+        IFSspace[1] = '\t';
+        IFSspace[2] = '\n';
+        IFSspace[3] = '\0';
+        IFSdelim[0] = '\0';
     }
     else
     {
-        p = IFS;
-        char *sp = IFSSpace;
-        char *dp = IFSDelim;
-
+        a = IFS;
+        char *spaceA = IFSspace;
+        char *delimA = IFSdelim;
         do
         {
-            if (isspace(*p))
+            if (isspace(*a))
             {
-                *sp++ = *p++;
+                *spaceA++ = *a++;
             }
             else
             {
-                *dp++ = *p++;
+                *delimA++ = *a++;
             }
-        } while (*p);
-
-        *sp = '\0';
-        *dp = '\0';
+        } while (*a);
+        *spaceA = '\0';
+        *delimA = '\0';
     }
 
-    size_t length = strlen(str);
-    size_t i = 0, j = 0, k;
-    int fields = 1;
-    char quote = 0;
+    size_t length = strlen(s);
+    size_t x = 0;
+    size_t y = 0;
+    size_t z;
+    int flds = 1;
+    char q = 0;
 
-    skipIFSWhitespace(&str, IFSSpace);
+    skipIFSwhitespace(&s, IFSspace);
 
     do
     {
-        switch (str[i])
+        switch (s[x])
         {
         case '\\':
-            if (quote != '\'')
+            if (q != '\'')
             {
-                i++;
+                x++;
             }
             break;
 
         case '\'':
         case '"':
         case '`':
-            if (quote == str[i])
+            if (q == s[x])
             {
-                quote = 0;
+                q = 0;
             }
             else
             {
-                quote = str[i];
+                q = s[x];
             }
             break;
 
         default:
-            if (quote)
+            if (q)
             {
                 break;
             }
-
-            if (isIFSChar(str[i], IFSSpace) || isIFSChar(str[i], IFSDelim))
+            if (isIFSchar(s[x], IFSspace) || isIFSchar(s[x], IFSdelim))
             {
-                skipIFSDelim(str, IFSSpace, IFSDelim, &i, length);
-                if (i < length)
+                skipIFSdelim(s, IFSspace, IFSdelim, &x, length);
+                if (x < length)
                 {
-                    fields++;
+                    flds++;
                 }
             }
             break;
         }
-    } while (++i < length);
+    } while (++x < length);
 
-    if (fields == 1)
+    if (flds == 1)
     {
         return NULL;
     }
-
-    struct wordS *firstField = NULL;
+    struct wordS *fld1 = NULL;
     struct wordS *cursor = NULL;
 
-    i = 0;
-    j = 0;
-    quote = 0;
+    x = 0;
+    y = 0;
+    q = 0;
 
     do
     {
-        switch (str[i])
+        switch (s[x])
         {
         case '\\':
-            if (quote != '\'')
+            if (q != '\'')
             {
-                i++;
+                x++;
             }
             break;
 
         case '\'':
-            p = str + i + 1;
-            while (*p && *p != '\'')
+            a = s + x + 1;
+            while (*a && *a != '\'')
             {
-                p++;
+                a++;
             }
-            i = p - str;
+            x = a - s;
             break;
 
         case '"':
         case '`':
-            if (quote == str[i])
+            if (q == s[x])
             {
-                quote = 0;
+                q = 0;
             }
             else
             {
-                quote = str[i];
+                q = s[x];
             }
             break;
 
         default:
-            if (quote)
+            if (q)
             {
                 break;
             }
-
-            if (isIFSChar(str[i], IFSSpace) ||
-                isIFSChar(str[i], IFSDelim) || (i == length))
+            if (isIFSchar(s[x], IFSspace) || isIFSchar(s[x], IFSdelim) || (x == length))
             {
-                char *temp = malloc(i - j + 1);
+                char *temp = malloc(x - y + 1);
 
                 if (!temp)
                 {
-                    fprintf(stderr, "error: insufficient memory for field splitting\n");
-                    return firstField;
+                    fprintf(stderr, "Error: Not enough memory for field splitting\n");
+                    return fld1;
                 }
 
-                strncpy(temp, str + j, i - j);
-                temp[i - j] = '\0';
-
+                strncpy(temp, s + y, x - y);
+                temp[x - y] = '\0';
                 struct wordS *field = malloc(sizeof(struct wordS));
 
                 if (!field)
                 {
                     free(temp);
-                    return firstField;
+                    return fld1;
                 }
 
                 field->data = temp;
-                field->length = i - j;
+                field->length = x - y;
                 field->next = NULL;
 
-                if (!firstField)
+                if (!fld1)
                 {
-                    firstField = field;
+                    fld1 = field;
                 }
-
                 if (!cursor)
                 {
                     cursor = field;
@@ -1181,146 +1149,139 @@ struct wordS *fieldSplit(char *str)
                     cursor = field;
                 }
 
-                k = i;
+                z = x;
+                skipIFSdelim(s, IFSspace, IFSdelim, &x, length);
+                y = x;
 
-                skipIFSDelim(str, IFSSpace, IFSDelim, &i, length);
-                j = i;
-
-                if (i != k && i < length)
+                if (x != z && x < length)
                 {
-                    i--;
+                    x--;
                 }
             }
             break;
         }
-    } while (++i <= length);
+    } while (++x <= length);
 
-    return firstField;
+    return fld1;
 }
 
-struct wordS *pathnamesExpand(struct wordS *words)
+// Pathname expansion
+struct wordS *pathnamesExpand(struct word_s *ws)
 {
-    struct wordS *w = words;
-    struct wordS *pw = NULL;
+    struct wordS *w1 = ws;
+    struct wordS *w2 = NULL;
 
-    while (w)
+    while (w1)
     {
-        char *temp = w->data;
-
-        if (!hasGlobChars(temp, strlen(temp)))
+        char *a = w1->data;
+        if (!hasGlobChars(a, strlen(a)))
         {
-            pw = w;
-            w = w->next;
+            w2 = w1;
+            w1 = w1->next;
             continue;
         }
 
-        glob_t glob;
-        char **matches = getFilenameMatches(temp, &glob);
+        glob_t g;
+        char **matches = getFilenameMatches(a, &g);
 
         if (!matches || !matches[0])
         {
-            globfree(&glob);
+            globfree(&g);
         }
         else
         {
-            struct wordS *head = NULL, *tail = NULL;
+            struct wordS *top = NULL;
+            struct wordS *bottom = NULL;
 
-            for (size_t j = 0; j < glob.gl_pathc; j++)
+            for (size_t y = 0; y < g.gl_pathc; y++)
             {
-                if (matches[j][0] == '.' &&
-                    (matches[j][1] == '.' || matches[j][1] == '\0' || matches[j][1] == '/'))
+                if (matches[y][0] == '.' && (matches[y][1] == '.' || matches[y][1] == '\0' || matches[y][1] == '/'))
                 {
                     continue;
                 }
-
-                if (!head)
+                if (!top)
                 {
-                    head = makeWord(matches[j]);
-                    tail = head;
+                    top = makeWord(matches[y]);
+                    bottom = top;
                 }
                 else
                 {
-                    tail->next = makeWord(matches[j]);
-
-                    if (tail->next)
+                    bottom->next = makeWord(matches[y]);
+                    if (bottom->next)
                     {
-                        tail = tail->next;
+                        bottom = bottom->next;
                     }
                 }
             }
 
-            if (w == words)
+            if (w1 == ws)
             {
-                words = head;
+                ws = top;
             }
-            else if (pw)
+            else if (w2)
             {
-                pw->next = head;
+                w2->next = top;
             }
 
-            pw = tail;
-            tail->next = w->next;
-
-            w->next = NULL;
-            freeAllWords(w);
-            w = tail;
-
-            globfree(&glob);
+            w2 = bottom;
+            bottom->next = w1->next;
+            w1->next = NULL;
+            freeAllWords(w1);
+            w1 = bottom;
+            globfree(&g);
         }
 
-        pw = w;
-        w = w->next;
+        w2 = w1;
+        w1 = w1->next;
     }
 
-    return words;
+    return ws;
 }
 
-void removeQuotes(struct wordS *wordlist)
+// Quote removal
+void removeQuotes(struct wordS *wList)
 {
-    if (!wordlist)
+    if (!wList)
     {
         return;
     }
 
-    int inDoubleQuotes = 0;
-    struct wordS *word = wordlist;
-    char *temp;
+    int doubleQuotes = 0;
+    struct wordS *w1 = wList;
+    char *a;
 
-    while (word)
+    while (w1)
     {
-        temp = word->data;
-        while (*temp)
+        a = w1->data;
+        while (*a)
         {
-            switch (*temp)
+            switch (*a)
             {
             case '"':
-                /* toggle quote mode */
-                inDoubleQuotes = !inDoubleQuotes;
-                deleteCharAt(temp, 0);
+                doubleQuotes = !doubleQuotes;
+                deleteCharAt(a, 0);
                 break;
 
             case '\'':
-                if (inDoubleQuotes)
+                if (doubleQuotes)
                 {
-                    temp++;
+                    a++;
                     break;
                 }
 
-                deleteCharAt(temp, 0);
-
-                while (*temp && *temp != '\'')
+                deleteCharAt(a, 0);
+                while (*a && *a != '\'')
                 {
-                    temp++;
+                    a++;
                 }
-
-                if (*temp == '\'')
+                if (*a == '\'')
                 {
-                    deleteCharAt(temp, 0);
+                    deleteCharAt(a, 0);
                 }
                 break;
 
             case '`':
-                deleteCharAt(temp, 0);
+                deleteCharAt(a, 0);
                 break;
 
             case '\v':
@@ -1328,58 +1289,56 @@ void removeQuotes(struct wordS *wordlist)
             case '\t':
             case '\r':
             case '\n':
-                temp++;
+                a++;
                 break;
 
             case '\\':
-                if (inDoubleQuotes)
+                if (doubleQuotes)
                 {
-                    switch (temp[1])
+                    switch (a[1])
                     {
                     case '$':
                     case '`':
                     case '"':
                     case '\\':
                     case '\n':
-                        deleteCharAt(temp, 0);
-                        temp++;
+                        deleteCharAt(a, 0);
+                        a++;
                         break;
 
                     default:
-                        temp++;
+                        a++;
                         break;
                     }
                 }
                 else
                 {
-                    deleteCharAt(temp, 0);
-                    temp++;
+                    deleteCharAt(a, 0);
+                    a++;
                 }
                 break;
 
             default:
-                temp++;
+                a++;
                 break;
             }
         }
 
-        word->length = strlen(word->data);
-
-        word = word->next;
+        w1->length = strlen(w1->data);
+        w1 = w1->next;
     }
 }
 
-char *wordExpandToStr(char *word)
+char *wordExpandToStr(char *w)
 {
-    struct wordS *w = wordExpand(word);
-
-    if (!w)
+    struct wordS *w1 = word_expand(w);
+    if (!w1)
     {
         return NULL;
     }
 
-    char *res = wordlistToStr(w);
-    freeAllWords(w);
+    char *result = wordlistToStr(w1);
+    freeAllWords(w1);
 
-    return res;
+    return result;
 }

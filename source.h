@@ -11,9 +11,9 @@ struct sourceS
     long cursorPosition; // Position of user's cursor
 };
 
-char nextChar(struct sourceS *src);
-void ungetChar(struct sourceS *src);
-char peekChar(struct sourceS *src);
-void skipWhiteSpaces(struct sourceS *src);
+char nextChar(struct sourceS *s);
+void ungetChar(struct sourceS *s);
+char peekChar(struct sourceS *s);
+void skipWhiteSpaces(struct sourceS *s);
 
 #endif

@@ -46,102 +46,102 @@ long longValue(struct stackItemS *item)
 
 long evalUminus(struct stackItemS *item1, struct stackItemS *item2 __attribute__((unused)))
 {
-    return -long_value(item1);
+    return -longValue(item1);
 }
 
 long evalUplus(struct stackItemS *item1, struct stackItemS *item2 __attribute__((unused)))
 {
-    return long_value(item1);
+    return longValue(item1);
 }
 
 long evalLognot(struct stackItemS *item1, struct stackItemS *item2 __attribute__((unused)))
 {
-    return !long_value(item1);
+    return !longValue(item1);
 }
 
 long evalBitnot(struct stackItemS *item1, struct stackItemS *item2 __attribute__((unused)))
 {
-    return ~long_value(item1);
+    return ~longValue(item1);
 }
 
 long evalMult(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) * long_value(item2);
+    return longValue(item1) * longValue(item2);
 }
 
 long evalAdd(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) + long_value(item2);
+    return longValue(item1) + longValue(item2);
 }
 
 long evalSub(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) - long_value(item2);
+    return longValue(item1) - longValue(item2);
 }
 
 long evalLsh(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) << long_value(item2);
+    return longValue(item1) << longValue(item2);
 }
 
 long evalRsh(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) >> long_value(item2);
+    return longValue(item1) >> longValue(item2);
 }
 
 long evalLt(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) < long_value(item2);
+    return longValue(item1) < longValue(item2);
 }
 
 long evalLe(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) <= long_value(item2);
+    return longValue(item1) <= longValue(item2);
 }
 
 long evalGt(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) > long_value(item2);
+    return longValue(item1) > longValue(item2);
 }
 
 long evalGe(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) >= long_value(item2);
+    return longValue(item1) >= longValue(item2);
 }
 
 long evalEq(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) == long_value(item2);
+    return longValue(item1) == longValue(item2);
 }
 
 long evalNe(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) != long_value(item2);
+    return longValue(item1) != longValue(item2);
 }
 
 long evalBitand(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) & long_value(item2);
+    return longValue(item1) & longValue(item2);
 }
 
 long evalBitxor(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) ^ long_value(item2);
+    return longValue(item1) ^ longValue(item2);
 }
 
 long evalBitor(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) | long_value(item2);
+    return longValue(item1) | longValue(item2);
 }
 
 long evalLogand(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) && long_value(item2);
+    return longValue(item1) && longValue(item2);
 }
 
 long evalLogor(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return long_value(item1) || long_value(item2);
+    return longValue(item1) || longValue(item2);
 }
 
 long doEvalExp(long item1, long item2)
@@ -151,43 +151,43 @@ long doEvalExp(long item1, long item2)
 
 long evalExp(struct stackItemS *item1, struct stackItemS *item2)
 {
-    return doEvalExp(long_value(item1), long_value(item2));
+    return doEvalExp(longValue(item1), longValue(item2));
 }
 
 long evalDiv(struct stackItemS *item1, struct stackItemS *item2)
 {
-    error = 0;
-    long new2 = long_value(item2);
+    err = 0;
+    long new2 = longValue(item2);
     if (!new2)
     {
         fprintf(stderr, "Error: Cannot divide by zero\n");
-        error = 1;
+        err = 1;
         return 0;
     }
-    return long_value(item1) / new2;
+    return longValue(item1) / new2;
 }
 
 long evalMod(struct stackItemS *item1, struct stackItemS *item2)
 {
-    error = 0;
-    long new2 = long_value(item2);
+    err = 0;
+    long new2 = longValue(item2);
     if (!new2)
     {
         fprintf(stderr, "Error: Cannot divide by zero\n");
-        error = 1;
+        err = 1;
         return 0;
     }
-    return long_value(item1) % new2;
+    return longValue(item1) % new2;
 }
 
 long evalAssign(struct stackItemS *item1, struct stackItemS *item2)
 {
-    long v = long_value(item2);
+    long v = longValue(item2);
     if (item1->type == ITEM_VAR_PTR)
     {
         char buffer[16];
         sprintf(buffer, "%ld", v);
-        symtab_entry_setval(item1->pointer, buffer);
+        symtabEntrySetval(item1->pointer, buffer);
     }
     return v;
 }
@@ -604,10 +604,10 @@ void pushOpstack(struct opS *op)
     if (nopStack > MAXOPSTACK - 1)
     {
         fprintf(stderr, "Error: Operator stack overflow\n");
-        error = 1;
+        err = 1;
         return;
     }
-    opstack[nopStack++] = op;
+    opStack[nopStack++] = op;
 }
 
 // Pop operator to stack
@@ -616,10 +616,10 @@ struct opS *popOpstack(void)
     if (!nopStack)
     {
         fprintf(stderr, "Error: Operator stack empty\n");
-        error = 1;
+        err = 1;
         return NULL;
     }
-    return opstack[--nopStack];
+    return opStack[--nopStack];
 }
 
 // Push numeric op to stack
@@ -628,12 +628,12 @@ void pushNumstackl(long val)
     if (nNumStack > MAXNUMSTACK - 1)
     {
         fprintf(stderr, "Error: Number stack overflow\n");
-        error = 1;
+        err = 1;
         return;
     }
 
-    numstack[nNumStack].type = ITEM_LONG_INT;
-    numstack[nNumStack++].val = val;
+    numStack[nNumStack].type = ITEM_LONG_INT;
+    numStack[nNumStack++].val = val;
 }
 
 // Push var op to op stack
@@ -643,7 +643,7 @@ void pushNumstackv(struct symtabEntryS *val)
     if (nNumStack > MAXNUMSTACK - 1)
     {
         fprintf(stderr, "Error: Number stack overflow\n");
-        error = 1;
+        err = 1;
         return;
     }
 
@@ -657,17 +657,17 @@ struct stackItemS popNumstack(void)
     if (!nNumStack)
     {
         fprintf(stderr, "Error: Number stack empty\n");
-        error = 1;
+        err = 1;
         return (struct stackItemS){};
     }
     return numStack[--nNumStack];
 }
 
 // Operator shunting
-void shuntOp(struct ops *op)
+void shuntOp(struct opS *op)
 {
     struct opS *pop;
-    error = 0;
+    err = 0;
     if (op->op == '(')
     {
         pushOpstack(op);
@@ -675,15 +675,15 @@ void shuntOp(struct ops *op)
     }
     else if (op->op == ')')
     {
-        while (nopStack > 0 && opstack[nopStack - 1]->op != '(')
+        while (nopStack > 0 && opStack[nopStack - 1]->op != '(')
         {
             pop = popOpstack();
-            if (error)
+            if (err)
             {
                 return;
             }
             struct stackItemS num1 = popNumstack();
-            if (error)
+            if (err)
             {
                 return;
             }
@@ -694,12 +694,12 @@ void shuntOp(struct ops *op)
             else
             {
                 struct stackItemS num2 = popNumstack();
-                if (error)
+                if (err)
                 {
                     return;
                 }
                 pushNumstackl(pop->eval(&num2, &num1));
-                if (error)
+                if (err)
                 {
                     return;
                 }
@@ -708,17 +708,17 @@ void shuntOp(struct ops *op)
         if (!(pop = popOpstack()) || pop->op != '(')
         {
             fprintf(stderr, "Error: Stack error. No matching \'(\'\n");
-            error = 1;
+            err = 1;
         }
         return;
     }
 
     if (op->assoc == ASSOC_RIGHT)
     {
-        while (nopStack && op->prec < opstack[nopStack - 1]->prec)
+        while (nopStack && op->prec < opStack[nopStack - 1]->prec)
         {
             pop = popOpstack();
-            if (error)
+            if (err)
             {
                 return;
             }
@@ -730,13 +730,13 @@ void shuntOp(struct ops *op)
             else
             {
                 struct stackItemS num2 = popNumstack();
-                if (error)
+                if (err)
                 {
                     return;
                 }
                 pushNumstackl(pop->eval(&num2, &num1));
             }
-            if (error)
+            if (err)
             {
                 return;
             }
@@ -744,10 +744,10 @@ void shuntOp(struct ops *op)
     }
     else
     {
-        while (nopStack && op->prec <= opstack[nopStack - 1]->prec)
+        while (nopStack && op->prec <= opStack[nopStack - 1]->prec)
         {
             pop = popOpstack();
-            if (error)
+            if (err)
             {
                 return;
             }
@@ -759,19 +759,19 @@ void shuntOp(struct ops *op)
             else
             {
                 struct stackItemS num2 = popNumstack();
-                if (error)
+                if (err)
                 {
                     return;
                 }
                 pushNumstackl(pop->eval(&num2, &num1));
             }
-            if (error)
+            if (err)
             {
                 return;
             }
         }
     }
-    push_opstack(op);
+    pushOpstack(op);
 }
 
 int getNdigit(char a, int b, int *res)
@@ -845,7 +845,7 @@ int getNdigit(char a, int b, int *res)
 
 invalid:
     fprintf(stderr, "Error: digit %c exceeds the value of the base %d\n", a, b);
-    error = 1;
+    err = 1;
     return 0;
 }
 
@@ -884,7 +884,7 @@ long getNum(char *a, int *charCount)
         a2++;
     }
 
-    if (error)
+    if (err)
     {
         return 0;
     }
@@ -905,7 +905,7 @@ long getNum(char *a, int *charCount)
             n = (n * b) + n2;
             a2++;
         }
-        if (error)
+        if (err)
         {
             return 0;
         }
@@ -981,7 +981,7 @@ char *arithmExpand(char *origExp)
 
     nopStack = 0;
     nNumStack = 0;
-    error = 0;
+    err = 0;
     exp = baseExp;
 
     for (; *exp;)
@@ -1020,9 +1020,9 @@ char *arithmExpand(char *origExp)
                         }
                     }
                 }
-                error = 0;
+                err = 0;
                 shuntOp(op);
-                if (error)
+                if (err)
                 {
                     goto err;
                 }
@@ -1051,14 +1051,14 @@ char *arithmExpand(char *origExp)
             }
             else if (isdigit(*exp))
             {
-                error = 0;
+                err = 0;
                 num1 = getNum(start, &num2);
-                if (error)
+                if (err)
                 {
                     goto err;
                 }
                 pushNumstackl(num1);
-                if (error)
+                if (err)
                 {
                     goto err;
                 }
@@ -1074,9 +1074,9 @@ char *arithmExpand(char *origExp)
                     fprintf(stderr, "Error: Couldn not add symbol near: %s\n", start);
                     goto err;
                 }
-                error = 0;
+                err = 0;
                 pushNumstackv(num1);
-                if (error)
+                if (err)
                 {
                     goto err;
                 }
@@ -1086,14 +1086,14 @@ char *arithmExpand(char *origExp)
             }
             else if ((op = getOp(exp)))
             {
-                error = 0;
+                err = 0;
                 num1 = getNum(start, &num2);
-                if (error)
+                if (err)
                 {
                     goto err;
                 }
                 pushNumstackl(num1);
-                if (error)
+                if (err)
                 {
                     goto err;
                 }
@@ -1115,7 +1115,7 @@ char *arithmExpand(char *origExp)
                 }
 
                 shuntOp(op);
-                if (error)
+                if (err)
                 {
                     goto err;
                 }
@@ -1132,11 +1132,11 @@ char *arithmExpand(char *origExp)
 
     if (start)
     {
-        error = 0;
+        err = 0;
         if (isdigit(*start))
         {
             num1 = getNum(start, &num2);
-            if (error)
+            if (err)
             {
                 goto err;
             }
@@ -1146,7 +1146,7 @@ char *arithmExpand(char *origExp)
         {
             pushNumstackv(getVar(start, &num2));
         }
-        if (error)
+        if (err)
         {
             goto err;
         }
@@ -1154,14 +1154,14 @@ char *arithmExpand(char *origExp)
 
     while (nopStack)
     {
-        error = 0;
+        err = 0;
         op = popOpstack();
-        if (error)
+        if (err)
         {
             goto err;
         }
         struct stackItemS num1 = popNumstack();
-        if (error)
+        if (err)
         {
             goto err;
         }
@@ -1172,13 +1172,13 @@ char *arithmExpand(char *origExp)
         else
         {
             struct stackItemS num2 = popNumstack();
-            if (error)
+            if (err)
             {
                 goto err;
             }
             pushNumstackl(op->eval(&num2, &num1));
         }
-        if (error)
+        if (err)
         {
             goto err;
         }
@@ -1197,7 +1197,7 @@ char *arithmExpand(char *origExp)
     }
 
     char result[64];
-    sprintf(result, "%ld", numstack[0].val);
+    sprintf(result, "%ld", numStack[0].val);
     char *result2 = malloc(strlen(result) + 1);
     if (result2)
     {

@@ -230,7 +230,7 @@ char *substituteStr(char *a, char *b, size_t aSize, size_t bSize)
     return fin;
 }
 
-int substitute_word(char **begin, char **a, size_t length, char *(func)(char *), int addQuotes)
+int substituteWord(char **begin, char **a, size_t length, char *(func)(char *), int addQuotes)
 {
     char *t = malloc(length + 1);
     if (!t)
@@ -410,7 +410,7 @@ struct wordS *wordExpand(char *oWord)
                 break;
             }
 
-            a += findClosingQuote(p);
+            a += findClosingQuote(a);
             break;
 
         case '`':
@@ -510,7 +510,7 @@ struct wordS *wordExpand(char *oWord)
 }
 
 // Tilde expansion on character
-char *tilde_expand(char *a)
+char *tildeExpand(char *a)
 {
     char *h = NULL;
     size_t length = strlen(a);
@@ -598,7 +598,7 @@ char *varExpand(char *oVarName)
     char *subst = strchr(oVarName, ':');
     if (!subst)
     {
-        subst = strchr_any(oVarName, "-=?+%#");
+        subst = strchrAny(oVarName, "-=?+%#");
     }
 
     length = subst ? (size_t)(subst - oVarName) : strlen(oVarName);
@@ -1053,7 +1053,7 @@ struct wordS *fieldSplit(char *s)
             }
             if (isIFSchar(s[x], IFSspace) || isIFSchar(s[x], IFSdelim))
             {
-                skipIFSdelim(s, IFSspace, IFSdelim, &x, length);
+                skipIFSdelimiters(s, IFSspace, IFSdelim, &x, length);
                 if (x < length)
                 {
                     flds++;
@@ -1150,7 +1150,7 @@ struct wordS *fieldSplit(char *s)
                 }
 
                 z = x;
-                skipIFSdelim(s, IFSspace, IFSdelim, &x, length);
+                skipIFSdelimiters(s, IFSspace, IFSdelim, &x, length);
                 y = x;
 
                 if (x != z && x < length)
@@ -1166,7 +1166,7 @@ struct wordS *fieldSplit(char *s)
 }
 
 // Pathname expansion
-struct wordS *pathnamesExpand(struct word_s *ws)
+struct wordS *pathnamesExpand(struct wordS *ws)
 {
     struct wordS *w1 = ws;
     struct wordS *w2 = NULL;
@@ -1182,7 +1182,7 @@ struct wordS *pathnamesExpand(struct word_s *ws)
         }
 
         glob_t g;
-        char **matches = getFilenameMatches(a, &g);
+        char **matches = getFileNameMatches(a, &g);
 
         if (!matches || !matches[0])
         {
@@ -1331,7 +1331,7 @@ void removeQuotes(struct wordS *wList)
 
 char *wordExpandToStr(char *w)
 {
-    struct wordS *w1 = word_expand(w);
+    struct wordS *w1 = wordExpand(w);
     if (!w1)
     {
         return NULL;

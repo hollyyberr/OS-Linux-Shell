@@ -121,7 +121,7 @@ int matchSuffix(char *ptrn, char *a, int lng)
     return 0;
 }
 
-char **getFilenameMatches(char *ptrn, glob_t *matches)
+char **getFileNameMatches(char *ptrn, glob_t *matches)
 {
     matches->gl_pathc = 0;
     matches->gl_pathv = NULL;

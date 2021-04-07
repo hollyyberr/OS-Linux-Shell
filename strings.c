@@ -3,13 +3,13 @@
 #include "shell.h"
 
 // Search input string for passed character
-char *strchrAny(char *str, char *cs)
+char *strchrAny(char *s, char *cs)
 {
-    if (!str || !cs)
+    if (!s || !cs)
     {
         return NULL;
     }
-    char *a = str;
+    char *a = s;
     while (*a)
     {
         char *b = cs;

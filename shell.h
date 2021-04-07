@@ -40,27 +40,58 @@ struct wordS
     struct wordS *next;
 };
 
+// Wordexp.c
 struct wordS *makeWord(char *s);
+
 void freeAllWords(struct wordS *v1);
 
-char *wordlistToStr(struct wordS *w);
-void deleteCharAt(char *s, size_t ind);
-int isName(char *s);
 size_t findClosingQuote(char *d);
+
 size_t findClosingBrace(char *d);
+
+void deleteCharAt(char *s, size_t ind);
+
 char *substituteStr(char *a, char *b, size_t aSize, size_t bSize);
-int substituteWord(char **begin, char **a, size_t length, char *(func)(char *), int addQuotes);
-char *strchrAny(char *s, char *cs);
-char *quoteVal(char *v, int addQuotes);
-int checkBufferBounds(int *cnt, int *length, char ***buffer);
-void freeBuffer(int length, char **buffer);
-char *tildeExpand(char *a);
-char *varExpand(char *oVarName);
-char *commandSubstitute(char *oCommand);
-char *arithmExpand(char *exp);
-struct wordS *fieldSplit(char *s);
-struct wordS *pathnamesExpand(struct wordS *ws);
-void removeQuotes(struct wordS *wList);
+
+char *wordlistToStr(struct wordS *w);
+
 struct wordS *wordExpand(char *oWord);
+
+char *wordExpandToStr(char *w);
+
+char *tildeExpand(char *a);
+
+char *commandSubstitute(char *oCommand);
+
+char *varExpand(char *oVarName);
+
+char *posParamsExpand(char *temp, int doubleQuotes);
+
+struct wordS *pathnamesExpand(struct wordS *ws);
+
+struct wordS *fieldSplit(char *s);
+
+void removeQuotes(struct wordS *wList);
+
+// Shunt.c
+char *arithmExpand(char *origExp);
+
+// Strings.c
+char *strchrAny(char *s, char *cs);
+
+char *quoteVal(char *v, int addQuotes);
+
+int checkBufferBounds(int *cnt, int *length, char ***buffer);
+
+void freeBuffer(int length, char **buffer);
+
+// Pattern.c
+int hasGlobChars(char *a, size_t length);
+
+int matchPrefix(char *ptrn, char *seg, int lng);
+
+int matchSuffix(char *ptrn, char *a, int lng);
+
+char **getFileNameMatches(char *ptrn, glob_t *matches);
 
 #endif

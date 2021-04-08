@@ -1,118 +1,286 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <string.h>
-#include "shell.h"
-#include "source.h"
-#include "parser.h"
-#include "executor.h"
+#include <sys/types.h>
+#include <sys/wait.h>
+
+/*
+    ----------------------------------------------
+    HOW TO COMPILE:
+    1) Open terminal in folder with main.c
+    2) Enter 'gcc -o lsh main.c' without quotes
+
+    HOW TO RUN:
+    1) After compiled, run './lsh' without quotes
+    ----------------------------------------------
+*/
 
 
-int main(int c, char **v)
+
+// Shell commands
+int cdlsh(char **args);
+int helplsh(char **args);
+int exitlsh(char **args);
+
+
+
+// Built in commands
+char *builtinStrings[] = 
 {
-    char *command;
+    "cd",
+    "help",
+    "exit"
+    // Where we could create the string values of new commands
+};
+int(*builtinFunctions[]) (char **) =
+{
+    &cdlsh,
+    &helplsh,
+    &exitlsh
+    // Prototypes (I think) of all of the possible command functions
+};
+int builtinlshNum()
+{
+    return sizeof(builtinStrings) / sizeof(char *);
+    // Size of array of functions
+}
 
-    initsh();
-    
-    do
+
+
+// Built in function implementation
+int cdlsh(char **args) // Used to change directory
+{
+    if (args[1] == NULL)
     {
-        printPrompt1();
-        command = readCommand();
-        if(!command)
+        fprintf(stderr, "lsh: Expected argument to \"cd\"\n");
+    }
+    else
+    {
+        if (chdir(args[1]) != 0)
+        {
+            perror("lsh");
+        }
+    }
+    return 1;
+}
+int helplsh(char **args) // Used to explain commands
+{
+    int temp;
+
+    printf("Group Final Assignment Shell\n");
+    printf("Enter program names and arguments then press enter.\n");
+    printf("Built in commands: \n");
+
+
+    for (temp = 0; temp < builtinlshNum(); temp++)
+    {
+        printf(" %s\n", builtinStrings[temp]);
+    }
+
+
+    printf("Use man command for info on other programs.\n");
+    return 1;
+}
+int exitlsh(char **args) // Used to quit shell
+{
+    return 0;
+}
+int launchlsh(char **args)
+// Called in 'executelsh' to launch shell
+{
+    pid_t var;
+    int sts;
+
+    var = fork();
+    if (var == 0)
+    {
+        if (execvp(args[0], args) == -1)
+        {
+            perror("lsh");
+        }
+        exit(EXIT_FAILURE);
+    }
+    else if (var < 0)
+    {
+        perror("lsh");
+    }
+    else
+    {
+        do
+        {
+            waitpid(var, &sts, WUNTRACED);
+        }
+        while (!WIFEXITED(sts) && !WIFSIGNALED(sts));
+    }
+
+    return 1;
+}
+int executelsh(char **args)
+// Called in looplsh
+{
+    int temp;
+
+    if (args[0] == NULL)
+    {
+        return 1;
+    }
+
+    for (temp = 0; temp < builtinlshNum(); temp++)
+    {
+        if (strcmp(args[0], builtinStrings[temp]) == 0)
+        {
+            return (*builtinFunctions[temp])(args);
+        }
+    }
+
+    return launchlsh(args);
+}
+
+
+
+// Reading line from stdin
+char *readlinelsh(void)
+{
+#ifdef USE_STD_GET_LSH
+
+    char *seg = NULL;
+    ssize_t bufferSize = 0;
+
+    if (getline(&seg, &bufferSize, stdin) == -1)
+    {
+        if (feof(stdin))
         {
             exit(EXIT_SUCCESS);
         }
-        if(command[0] == '\0' || strcmp(command, "\n") == 0)
-        {
-            free(command);
-            continue;
+        else{
+            perror("lsh: getline\n");
+            exit(EXIT_FAILURE)l;
         }
-        if(strcmp(command, "exit\n") == 0)
-        {
-            free(command);
-            break;
-        }
-	struct sourceS src;
-        src.buffer = command;
-        src.bufferSize  = strlen(command);
-        src.cursorPosition   = INIT_SRC_POS;
-        parseAndExecute(&src);
-        free(command);
-    } while(1);
-    exit(EXIT_SUCCESS);
-}
+    }
+    return seg;
+#else
+#define BUFFERSIZE_READLINE_LSH 1024
 
+    int bufferSize = BUFFERSIZE_READLINE_LSH;
+    int pos = 0;
+    char *buffer = malloc(sizeof(char) * bufferSize);
+    int a;
 
-char *readCommand(void)
-{
-    char buffer[1024];
-    char *pointer = NULL;
-    char pointerLen = 0;
-    while(fgets(buffer, 1024, stdin))
+    if (!buffer)
     {
-        int bufferLen = strlen(buffer);
-        if(!pointer)
+        fprintf(stderr, "lsh: error with allocation\n");
+        exit(EXIT_FAILURE);
+    }
+
+    while (1)
+    {
+        a = getchar();
+        if (a == EOF)
         {
-            pointer = malloc(bufferLen+1);
+            exit(EXIT_SUCCESS);
+        }
+        else if (a == '\n')
+        {
+            buffer[pos] = '\0';
+            return buffer;
         }
         else
         {
-            char *pointer2 = realloc(pointer, pointerLen+bufferLen+1);
-            if(pointer2)
-            {
-                pointer = pointer2;
-            }
-            else
-            {
-                free(pointer);
-                pointer = NULL;
-            }
+            buffer[pos] = a;
         }
-        if(!pointer)
+
+        pos++;
+
+        if (pos >= bufferSize)
         {
-            fprintf(stderr, "Error: Could not alloc buffer: %s\n", strerror(errno));
-            return NULL;
-        }
-        strcpy(pointer+pointerLen, buffer);
-        if(buffer[bufferLen-1] == '\n')
-        {
-            if(bufferLen == 1 || buffer[bufferLen-2] != '\\')
+            bufferSize += BUFFERSIZE_READLINE_LSH;
+            buffer = realloc(buffer, bufferSize);
+
+            if(!buffer)
             {
-                return pointer;
+                fprintf(stderr, "lsh: error with allocation\n");
+                exit(EXIT_FAILURE);
             }
-            pointer[pointerLen+bufferLen-2] = '\0';
-            bufferLen -= 2;
-            printPrompt2();
         }
-        pointerLen += bufferLen;
     }
-    return pointer;
+#endif
 }
 
 
-int parseAndExecute(struct sourceS *src)
+
+#define BUFFERSIZE_TOKEN_LSH 64
+#define DELIMITER_TOKEN_LSH " \t\r\n\a"
+
+
+char **splitlinelsh(char *seg)
 {
-    skipWhiteSpaces(src);
+    int bufferSize = BUFFERSIZE_TOKEN_LSH;
+    int pos = 0;
+    char **tokens = malloc(bufferSize * sizeof(char*));
+    char *token;
+    char **backupTokens;
 
-    struct tokenS *token = tokenize(src);
 
-    if(token == &eofToken)
+    if (!tokens)
     {
-        return 0;
+        fprintf(stderr, "lsh: error with allocation\n");
+        exit(EXIT_FAILURE);
     }
 
-    while(token && token != &eofToken)
-    {
-        struct nodeS *command = parseSimpleCommand(token);
 
-        if(!command)
+    token = strtok(seg, DELIMITER_TOKEN_LSH);
+    while (token!= NULL)
+    {
+        tokens[pos] = token;
+        pos++;
+
+
+        if (pos >= bufferSize)
         {
-            break;
+            bufferSize += BUFFERSIZE_TOKEN_LSH;
+            backupTokens = tokens;
+            tokens = realloc(tokens, bufferSize * sizeof(char*));
+            if (!tokens)
+            {
+                free(backupTokens);
+                fprintf(stderr, "lsh: error with allocation\n");
+                exit(EXIT_FAILURE);
+            }
         }
 
-        doSimpleCommand(command);
-        freeNodeTree(command);
-        token = tokenize(src);
+        token = strtok(NULL, DELIMITER_TOKEN_LSH);
     }
-    return 1;
+    tokens[pos] = NULL;
+    return tokens;
+}
+
+
+void looplsh(void)
+{
+    char *seg;
+    char **args;
+    int sts;
+
+
+    do
+    {
+        printf("> ");
+        seg = readlinelsh();
+        args = splitlinelsh(seg);
+        sts = executelsh(args);
+        free(seg);
+        free(args);
+    }
+    while (sts);
+}
+
+
+
+int main(int argc, char **argv)
+{
+    // Launching shell, waits for command/exit of shell
+    looplsh();
+
+    return EXIT_SUCCESS;
 }

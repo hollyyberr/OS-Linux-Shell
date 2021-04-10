@@ -19,9 +19,10 @@
 
 
 // Shell commands
-int cdlsh(char **args);
-int helplsh(char **args);
-int exitlsh(char **args);
+int cd_com(char **args);
+int help_com(char **args);
+int exit_com(char **args);
+int ps_com(char **args);
 
 
 
@@ -30,17 +31,19 @@ char *builtinStrings[] =
 {
     "cd",
     "help",
-    "exit"
+    "exit",
+    "ps"
     // Where we could create the string values of new commands
 };
 int(*builtinFunctions[]) (char **) =
 {
-    &cdlsh,
-    &helplsh,
-    &exitlsh
+    &cd_com,
+    &help_com,
+    &exit_com,
+    &ps_com
     // Prototypes (I think) of all of the possible command functions
 };
-int builtinlshNum()
+int builtinNum()
 {
     return sizeof(builtinStrings) / sizeof(char *);
     // Size of array of functions
@@ -49,7 +52,7 @@ int builtinlshNum()
 
 
 // Built in function implementation
-int cdlsh(char **args) // Used to change directory
+int cd_com(char **args) // Used to change directory
 {
     if (args[1] == NULL)
     {
@@ -64,7 +67,7 @@ int cdlsh(char **args) // Used to change directory
     }
     return 1;
 }
-int helplsh(char **args) // Used to explain commands
+int help_com(char **args) // Used to explain commands
 {
     int temp;
 
@@ -73,7 +76,7 @@ int helplsh(char **args) // Used to explain commands
     printf("Built in commands: \n");
 
 
-    for (temp = 0; temp < builtinlshNum(); temp++)
+    for (temp = 0; temp < builtinNum(); temp++)
     {
         printf(" %s\n", builtinStrings[temp]);
     }
@@ -82,11 +85,16 @@ int helplsh(char **args) // Used to explain commands
     printf("Use man command for info on other programs.\n");
     return 1;
 }
-int exitlsh(char **args) // Used to quit shell
+int ps_com(char **args)
+{
+    printf("CURRENT RUNNING PROCESSES\n");
+    system("ps -e");
+}
+int exit_com(char **args) // Used to quit shell
 {
     return 0;
 }
-int launchlsh(char **args)
+int launch_com(char **args)
 // Called in 'executelsh' to launch shell
 {
     pid_t var;
@@ -116,7 +124,7 @@ int launchlsh(char **args)
 
     return 1;
 }
-int executelsh(char **args)
+int execute_com(char **args)
 // Called in looplsh
 {
     int temp;
@@ -126,7 +134,7 @@ int executelsh(char **args)
         return 1;
     }
 
-    for (temp = 0; temp < builtinlshNum(); temp++)
+    for (temp = 0; temp < builtinNum(); temp++)
     {
         if (strcmp(args[0], builtinStrings[temp]) == 0)
         {
@@ -134,15 +142,15 @@ int executelsh(char **args)
         }
     }
 
-    return launchlsh(args);
+    return launch_com(args);
 }
 
 
 
 // Reading line from stdin
-char *readlinelsh(void)
+char *readline_com(void)
 {
-#ifdef USE_STD_GET_LSH
+#ifdef USE_STD_GET
 
     char *seg = NULL;
     ssize_t bufferSize = 0;
@@ -160,9 +168,9 @@ char *readlinelsh(void)
     }
     return seg;
 #else
-#define BUFFERSIZE_READLINE_LSH 1024
+#define BUFFERSIZE_READLINE 1024
 
-    int bufferSize = BUFFERSIZE_READLINE_LSH;
+    int bufferSize = BUFFERSIZE_READLINE;
     int pos = 0;
     char *buffer = malloc(sizeof(char) * bufferSize);
     int a;
@@ -194,7 +202,7 @@ char *readlinelsh(void)
 
         if (pos >= bufferSize)
         {
-            bufferSize += BUFFERSIZE_READLINE_LSH;
+            bufferSize += BUFFERSIZE_READLINE;
             buffer = realloc(buffer, bufferSize);
 
             if(!buffer)
@@ -209,13 +217,13 @@ char *readlinelsh(void)
 
 
 
-#define BUFFERSIZE_TOKEN_LSH 64
-#define DELIMITER_TOKEN_LSH " \t\r\n\a"
+#define BUFFERSIZE_TOKEN 64
+#define DELIMITER_TOKEN " \t\r\n\a"
 
 
-char **splitlinelsh(char *seg)
+char **splitline_com(char *seg)
 {
-    int bufferSize = BUFFERSIZE_TOKEN_LSH;
+    int bufferSize = BUFFERSIZE_TOKEN;
     int pos = 0;
     char **tokens = malloc(bufferSize * sizeof(char*));
     char *token;
@@ -229,7 +237,7 @@ char **splitlinelsh(char *seg)
     }
 
 
-    token = strtok(seg, DELIMITER_TOKEN_LSH);
+    token = strtok(seg, DELIMITER_TOKEN);
     while (token!= NULL)
     {
         tokens[pos] = token;
@@ -238,7 +246,7 @@ char **splitlinelsh(char *seg)
 
         if (pos >= bufferSize)
         {
-            bufferSize += BUFFERSIZE_TOKEN_LSH;
+            bufferSize += BUFFERSIZE_TOKEN;
             backupTokens = tokens;
             tokens = realloc(tokens, bufferSize * sizeof(char*));
             if (!tokens)
@@ -249,14 +257,14 @@ char **splitlinelsh(char *seg)
             }
         }
 
-        token = strtok(NULL, DELIMITER_TOKEN_LSH);
+        token = strtok(NULL, DELIMITER_TOKEN);
     }
     tokens[pos] = NULL;
     return tokens;
 }
 
 
-void looplsh(void)
+void loop_com(void)
 {
     char *seg;
     char **args;
@@ -266,9 +274,9 @@ void looplsh(void)
     do
     {
         printf("> ");
-        seg = readlinelsh();
-        args = splitlinelsh(seg);
-        sts = executelsh(args);
+        seg = readline_com();
+        args = splitline_com(seg);
+        sts = execute_com(args);
         free(seg);
         free(args);
     }
@@ -280,7 +288,7 @@ void looplsh(void)
 int main(int argc, char **argv)
 {
     // Launching shell, waits for command/exit of shell
-    looplsh();
+    loop_com();
 
     return EXIT_SUCCESS;
 }

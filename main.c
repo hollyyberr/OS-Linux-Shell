@@ -88,8 +88,8 @@ int help_com(char **args) // Used to explain commands
         printf(" %s\n", builtinStrings[temp]);
     }
 
+    printf(" ls\n");
 
-    printf("Use man command for info on other programs.\n");
     return 1;
 }
 int ps_com(char **args)

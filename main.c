@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <pwd.h>
 
 /*
     ----------------------------------------------
@@ -56,7 +57,13 @@ int cd_com(char **args) // Used to change directory
 {
     if (args[1] == NULL)
     {
-        fprintf(stderr, "lsh: Expected argument to \"cd\"\n");
+        char *homeDir;
+        struct passwd *home;
+        home = getpwuid(getuid());
+        homeDir = home->pw_dir;
+        if(chdir(homeDir) != 0) {
+            perror("lsh");
+        }
     }
     else
     {
@@ -273,6 +280,14 @@ void loop_com(void)
 
     do
     {
+        char pathName[4096];
+        if(getcwd(pathName, sizeof(pathName)) != NULL) {
+            printf("%s", pathName);
+        }
+        else {
+            perror("getcwd() error");
+        }
+
         printf("> ");
         seg = readline_com();
         args = splitline_com(seg);

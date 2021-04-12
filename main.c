@@ -96,6 +96,7 @@ int ps_com(char **args)
 {
     printf("CURRENT RUNNING PROCESSES\n");
     system("ps -e");
+    return 1;
 }
 int exit_com(char **args) // Used to quit shell
 {

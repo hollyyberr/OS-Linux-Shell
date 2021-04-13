@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pwd.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+#include <ncurses.h>
 
 /*
     ----------------------------------------------
@@ -17,13 +20,12 @@
     ----------------------------------------------
 */
 
-
-
 // Shell commands
 int cd_com(char **args);
 int help_com(char **args);
 int exit_com(char **args);
 int ps_com(char **args);
+int history_com(char **args);
 
 
 
@@ -33,7 +35,8 @@ char *builtinStrings[] =
     "cd",
     "help",
     "exit",
-    "ps"
+    "ps",
+    "history"
     // Where we could create the string values of new commands
 };
 int(*builtinFunctions[]) (char **) =
@@ -41,7 +44,8 @@ int(*builtinFunctions[]) (char **) =
     &cd_com,
     &help_com,
     &exit_com,
-    &ps_com
+    &ps_com,
+    &history_com
     // Prototypes (I think) of all of the possible command functions
 };
 int builtinNum()
@@ -50,7 +54,16 @@ int builtinNum()
     // Size of array of functions
 }
 
-
+int history_com(char **args) {
+    int l;
+    HIST_ENTRY** list = history_list();
+    if(list) {
+        for(l=0;list[l];l++) {
+            printf("%s\n",list[l]->line);
+        }
+    }
+    return 1;
+}
 
 // Built in function implementation
 int cd_com(char **args) // Used to change directory
@@ -154,77 +167,6 @@ int execute_com(char **args)
 }
 
 
-
-// Reading line from stdin
-char *readline_com(void)
-{
-#ifdef USE_STD_GET
-
-    char *seg = NULL;
-    ssize_t bufferSize = 0;
-
-    if (getline(&seg, &bufferSize, stdin) == -1)
-    {
-        if (feof(stdin))
-        {
-            exit(EXIT_SUCCESS);
-        }
-        else{
-            perror("lsh: getline\n");
-            exit(EXIT_FAILURE)l;
-        }
-    }
-    return seg;
-#else
-#define BUFFERSIZE_READLINE 1024
-
-    int bufferSize = BUFFERSIZE_READLINE;
-    int pos = 0;
-    char *buffer = malloc(sizeof(char) * bufferSize);
-    int a;
-
-    if (!buffer)
-    {
-        fprintf(stderr, "lsh: error with allocation\n");
-        exit(EXIT_FAILURE);
-    }
-
-    while (1)
-    {
-        a = getchar();
-        if (a == EOF)
-        {
-            exit(EXIT_SUCCESS);
-        }
-        else if (a == '\n')
-        {
-            buffer[pos] = '\0';
-            return buffer;
-        }
-        else
-        {
-            buffer[pos] = a;
-        }
-
-        pos++;
-
-        if (pos >= bufferSize)
-        {
-            bufferSize += BUFFERSIZE_READLINE;
-            buffer = realloc(buffer, bufferSize);
-
-            if(!buffer)
-            {
-                fprintf(stderr, "lsh: error with allocation\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-    }
-#endif
-}
-
-
-
 #define BUFFERSIZE_TOKEN 64
 #define DELIMITER_TOKEN " \t\r\n\a"
 
@@ -271,9 +213,14 @@ char **splitline_com(char *seg)
     return tokens;
 }
 
-
-void loop_com(void)
+int main(int argc, char **argv)
 {
+    using_history();
+
+    rl_bind_key('\t', rl_complete);
+
+
+    // Launching shell, waits for command/exit of shell
     char *seg;
     char **args;
     int sts;
@@ -290,21 +237,18 @@ void loop_com(void)
         }
 
         printf("> ");
-        seg = readline_com();
+        char input[100];
+        input[0] = '\0';
+        seg = readline(input);
+
+        add_history(seg);
+
         args = splitline_com(seg);
         sts = execute_com(args);
         free(seg);
         free(args);
     }
     while (sts);
-}
-
-
-
-int main(int argc, char **argv)
-{
-    // Launching shell, waits for command/exit of shell
-    loop_com();
 
     return EXIT_SUCCESS;
 }

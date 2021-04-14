@@ -13,10 +13,10 @@
     ----------------------------------------------
     HOW TO COMPILE:
     1) Open terminal in folder with main.c
-    2) Enter 'gcc -o lsh main.c' without quotes
+    2) Enter 'gcc -o shell main.c' without quotes
 
     HOW TO RUN:
-    1) After compiled, run './lsh' without quotes
+    1) After compiled, run './shell' without quotes
     ----------------------------------------------
 */
 
@@ -26,6 +26,7 @@ int help_com(char **args);
 int exit_com(char **args);
 int ps_com(char **args);
 int history_com(char **args);
+int run_task_com(char **args);
 
 
 
@@ -37,6 +38,7 @@ char *builtinStrings[] =
     "exit",
     "ps",
     "history"
+    "run"
     // Where we could create the string values of new commands
 };
 int(*builtinFunctions[]) (char **) =
@@ -45,7 +47,8 @@ int(*builtinFunctions[]) (char **) =
     &help_com,
     &exit_com,
     &ps_com,
-    &history_com
+    &history_com,
+    &run_task_com
     // Prototypes (I think) of all of the possible command functions
 };
 int builtinNum()
@@ -82,7 +85,7 @@ int cd_com(char **args) // Used to change directory
     {
         if (chdir(args[1]) != 0)
         {
-            perror("lsh");
+            perror("Shell");
         }
     }
     return 1;
@@ -101,17 +104,39 @@ int help_com(char **args) // Used to explain commands
         printf(" %s\n", builtinStrings[temp]);
     }
 
-    printf(" ls\n");
+    printf(" Shell\n");
 
     return 1;
 }
 int ps_com(char **args)
+// Used to print all currently running processes
 {
     printf("CURRENT RUNNING PROCESSES\n");
     system("ps -e");
     return 1;
 }
-int exit_com(char **args) // Used to quit shell
+int run_task_com(char **args)
+// Used to launch new task foreground/background
+{
+    int size = sizeof args / sizeof *args;
+    char *amp = "&";
+    if (args[size-1] == "&")
+    {
+        char *command = (char *) malloc(1 + strlen(args[1]) + strlen(amp));
+        strcpy(command, args[1]);
+        strcat(command, amp);
+        system(command);
+        printf("Running job in background");
+    }
+    else
+    {
+        system(args[1]);
+        printf("Running job in foreground");
+    }
+    return 1;
+}
+int exit_com(char **args) 
+// Used to quit shell
 {
     return 0;
 }
@@ -126,13 +151,13 @@ int launch_com(char **args)
     {
         if (execvp(args[0], args) == -1)
         {
-            perror("lsh");
+            perror("Shell");
         }
         exit(EXIT_FAILURE);
     }
     else if (var < 0)
     {
-        perror("lsh");
+        perror("Shell");
     }
     else
     {
@@ -182,7 +207,7 @@ char **splitline_com(char *seg)
 
     if (!tokens)
     {
-        fprintf(stderr, "lsh: error with allocation\n");
+        fprintf(stderr, "Shell: error with allocation\n");
         exit(EXIT_FAILURE);
     }
 
@@ -202,7 +227,7 @@ char **splitline_com(char *seg)
             if (!tokens)
             {
                 free(backupTokens);
-                fprintf(stderr, "lsh: error with allocation\n");
+                fprintf(stderr, "Shell: error with allocation\n");
                 exit(EXIT_FAILURE);
             }
         }

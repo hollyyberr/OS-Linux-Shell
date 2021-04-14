@@ -27,6 +27,7 @@ int exit_com(char **args);
 int ps_com(char **args);
 int history_com(char **args);
 int run_task_com(char **args);
+int jobs_com(char **args);
 
 
 
@@ -38,7 +39,8 @@ char *builtinStrings[] =
     "exit",
     "ps",
     "history",
-    "run"
+    "run",
+    "jobs"
     // Where we could create the string values of new commands
 };
 int(*builtinFunctions[]) (char **) =
@@ -48,7 +50,8 @@ int(*builtinFunctions[]) (char **) =
     &exit_com,
     &ps_com,
     &history_com,
-    &run_task_com
+    &run_task_com,
+    &jobs_com
     // Prototypes (I think) of all of the possible command functions
 };
 int builtinNum()
@@ -118,21 +121,42 @@ int ps_com(char **args)
 int run_task_com(char **args)
 // Used to launch new task foreground/background
 {
+    // Necessary variables
     int size = sizeof args / sizeof *args;
-    char *amp = " &";
-    if (args[size-1] == "&")
+    int i;
+    char command[2048];
+    command[0] = '\0';
+
+    // Concatenates arguments into 'command' variable
+    for(i = 1; i < size; i++)
     {
-        char *command = (char *) malloc(1 + strlen(args[1]) + strlen(amp));
-        strcpy(command, args[1]);
-        strcat(command, amp);
+        if(i == size-1) // If at the end of arguments, does not add space
+        {
+            strcat(command, args[i]);
+        }
+        else // Adds spaces between each argument
+        {
+            strcat(command, args[i]);
+            strcat(command, " ");
+        }
+    }
+
+    if(args[size-1] == "&") // If 'command' contains "&", tells user task is being executed in background
+    {
+        printf("Executing background task.");
         system(command);
-        printf("Running job in background");
     }
-    else
+    else // If 'command' does not contain "&", tells user task is being executed in foreground
     {
-        system(args[1]);
-        printf("Running job in foreground");
+        printf("Executing foreground task.");
+        system(command);
     }
+
+    return 1;
+}
+int jobs_com(char **args)
+{
+    system("jobs");
     return 1;
 }
 int exit_com(char **args) 

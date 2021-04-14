@@ -13,7 +13,7 @@
     ----------------------------------------------
     HOW TO COMPILE:
     1) Open terminal in folder with main.c
-    2) Enter 'gcc -o shell main.c' without quotes
+    2) Enter 'gcc -o shell main.c -lreadline' without quotes
 
     HOW TO RUN:
     1) After compiled, run './shell' without quotes
@@ -37,7 +37,7 @@ char *builtinStrings[] =
     "help",
     "exit",
     "ps",
-    "history"
+    "history",
     "run"
     // Where we could create the string values of new commands
 };
@@ -119,7 +119,7 @@ int run_task_com(char **args)
 // Used to launch new task foreground/background
 {
     int size = sizeof args / sizeof *args;
-    char *amp = "&";
+    char *amp = " &";
     if (args[size-1] == "&")
     {
         char *command = (char *) malloc(1 + strlen(args[1]) + strlen(amp));

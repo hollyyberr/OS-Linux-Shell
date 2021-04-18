@@ -118,42 +118,6 @@ int ps_com(char **args)
     system("ps -e");
     return 1;
 }
-int run_task_com(char **args)
-// Used to launch new task foreground/background
-{
-    // Necessary variables
-    int size = sizeof args / sizeof *args;
-    int i;
-    char command[2048];
-    command[0] = '\0';
-
-    // Concatenates arguments into 'command' variable
-    for(i = 1; i < size; i++)
-    {
-        if(i == size-1) // If at the end of arguments, does not add space
-        {
-            strcat(command, args[i]);
-        }
-        else // Adds spaces between each argument
-        {
-            strcat(command, args[i]);
-            strcat(command, " ");
-        }
-    }
-
-    if(args[size-1] == "&") // If 'command' contains "&", tells user task is being executed in background
-    {
-        printf("Executing background task.");
-        system(command);
-    }
-    else // If 'command' does not contain "&", tells user task is being executed in foreground
-    {
-        printf("Executing foreground task.");
-        system(command);
-    }
-
-    return 1;
-}
 int jobs_com(char **args)
 {
     system("jobs");
@@ -165,7 +129,7 @@ int exit_com(char **args)
     return 0;
 }
 int launch_com(char **args)
-// Called in 'executelsh' to launch shell
+// Called in 'execute_com' to launch process
 {
     pid_t var;
     int sts;
@@ -234,20 +198,21 @@ char **splitline_com(char *seg)
     char *token;
     char **backupTokens;
 
-
+    // If there are no tokens, Shell sends error and exits
+    // Code after if statement does not execute
     if (!tokens)
     {
         fprintf(stderr, "Shell: error with allocation\n");
         exit(EXIT_FAILURE);
     }
 
-
+    // Creates an array of tokens
+    // Increases size of the array as needed
     token = strtok(seg, DELIMITER_TOKEN);
     while (token!= NULL)
     {
         tokens[pos] = token;
         pos++;
-
 
         if (pos >= bufferSize)
         {

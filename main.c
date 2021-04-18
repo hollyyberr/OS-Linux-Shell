@@ -26,7 +26,6 @@ int help_com(char **args);
 int exit_com(char **args);
 int ps_com(char **args);
 int history_com(char **args);
-int run_task_com(char **args);
 int jobs_com(char **args);
 
 
@@ -39,7 +38,6 @@ char *builtinStrings[] =
     "exit",
     "ps",
     "history",
-    "run",
     "jobs"
     // Where we could create the string values of new commands
 };
@@ -50,7 +48,6 @@ int(*builtinFunctions[]) (char **) =
     &exit_com,
     &ps_com,
     &history_com,
-    &run_task_com,
     &jobs_com
     // Prototypes (I think) of all of the possible command functions
 };

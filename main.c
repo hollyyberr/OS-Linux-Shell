@@ -195,15 +195,19 @@ int launch_com(char **args)
     return 1;
 }
 int execute_com(char **args)
-// Called in looplsh
+// Called in main method
 {
     int temp;
 
+    // Checks if nothing has been entered
+    // Prints another Shell prompt
     if (args[0] == NULL)
     {
         return 1;
     }
 
+    // Runs through array of all possible commands
+    // If user enters builtin command, executes
     for (temp = 0; temp < builtinNum(); temp++)
     {
         if (strcmp(args[0], builtinStrings[temp]) == 0)
@@ -212,6 +216,8 @@ int execute_com(char **args)
         }
     }
 
+    // If user enters a command that is not builtin
+    // Tries to launch command
     return launch_com(args);
 }
 

@@ -78,7 +78,7 @@ int cd_com(char **args) // Used to change directory
         home = getpwuid(getuid());
         homeDir = home->pw_dir;
         if(chdir(homeDir) != 0) {
-            perror("lsh");
+            perror("Shell");
         }
     }
     else

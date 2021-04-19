@@ -116,6 +116,7 @@ int ps_com(char **args)
     return 1;
 }
 int jobs_com(char **args)
+// Used to print currently running jobs
 {
     system("jobs");
     return 1;

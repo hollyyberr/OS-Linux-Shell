@@ -2,11 +2,11 @@
 Operating Systems Final Project
 
 Developed by:
-Jake Brzyski
-Noah Paiva
-Holly Bernich
-Veronica Marquez
-Jacob Rappaport
+- Jake Brzyski
+- Noah Paiva
+- Holly Bernich
+- Veronica Marquez
+- Jacob Rappaport
 
 ----- PREREQUISITES -----
 
